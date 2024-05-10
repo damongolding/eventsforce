@@ -1,11 +1,23 @@
 version: "3"
 
+env:
+  VERSION: v0.1.4
+
 dotenv: [".env"]
 
 tasks:
+  e:
+    cmds:
+      - echo "{{.HEY}}"
+
   build:
     cmds:
       - go build -o dist/eventsforce .
+
+  tag:
+    cmds:
+      - git tag -a $VERSION -m "{{.MESSAGE}}"
+      - git push origin $VERSION
 
   release:
     cmds:
