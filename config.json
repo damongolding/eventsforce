@@ -1,0 +1,10 @@
+{
+  "srcDir": "src",
+  "buildDir": "build",
+  "buildOptions": {
+    "cleanBuildDir": true,
+    "addFonts": true,
+    "minifyHTML": true,
+    "minifyCSS": true
+  }
+}

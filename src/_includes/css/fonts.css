@@ -1,0 +1,33 @@
+@charset "UTF-8";
+@font-face {
+    font-family: BCSans;
+    src:
+        url("./BritishCouncilSansW08-Lt.woff2") format("woff2"),
+        url("./BritishCouncilSansW08-Lt.woff") format("woff");
+    font-weight: 100;
+}
+
+@font-face {
+    font-family: BCSans;
+    src:
+        url("./BritishCouncilSansW08-Rg.woff2") format("woff2"),
+        url("./BritishCouncilSansW08-Rg.woff") format("woff");
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: BCSans;
+    src:
+        url("./BritishCouncilSansW08-Bd.woff2") format("woff2"),
+        url("./BritishCouncilSansW08-Bd.woff") format("woff");
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: BCSansHeading;
+    src:
+        url("./BritishCouncilSansW05-Headline.woff2") format("woff2"),
+        url("./BritishCouncilSansW05-Headline.woff") format("woff");
+    font-weight: 300;
+}
