@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
@@ -13,9 +12,6 @@ import (
 	"github.com/damongolding/eventsforce/internal/utils"
 	human "github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
-	"github.com/tdewolff/minify/v2"
-	"github.com/tdewolff/minify/v2/css"
-	"github.com/tdewolff/minify/v2/html"
 )
 
 func init() {
@@ -33,7 +29,7 @@ var buildCmd = &cobra.Command{
 		start := time.Now()
 
 		if err := build(true); err != nil {
-			fmt.Print(err)
+			fmt.Println(err)
 			return
 		}
 
@@ -49,7 +45,7 @@ var buildCmd = &cobra.Command{
 	},
 }
 
-func build(production bool) error {
+func build(productionMode bool) error {
 
 	if config.BuildOptions.CleanBuildDir {
 		err := utils.CleanBuildDir(config.BuildDir)
@@ -57,12 +53,12 @@ func build(production bool) error {
 			return err
 		}
 
-		if production {
+		if productionMode {
 			print(blue("Cleaning build dir"))
 		}
 	}
 
-	if production {
+	if productionMode {
 		fmt.Println()
 		b := lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("#fff")).Bold(true).Background(lipgloss.Color("#f07e9b")).Render
 		u := lipgloss.NewStyle().Padding(0).Foreground(lipgloss.Color("#fff")).Bold(true).Background(lipgloss.Color("#df73b3")).Render
@@ -78,14 +74,6 @@ func build(production bool) error {
 			Render
 		fmt.Println(bord(s))
 	}
-
-	minifier := minify.New()
-	minifier.AddFunc("text/css", css.Minify)
-	minifier.Add("text/html", &html.Minifier{
-		KeepDocumentTags: true,
-		KeepEndTags:      true,
-		KeepQuotes:       true,
-	})
 
 	fileList, err := os.ReadDir(config.SrcDir)
 	if err != nil {
@@ -126,67 +114,14 @@ func build(production bool) error {
 				return nil
 			}
 
-			// css file
-			if filepath.Ext(path) == ".css" {
-				fileContent, err := os.ReadFile(path)
+			switch filepath.Ext(path) {
+			case ".css":
+				cssProcessor(path, productionMode)
 				if err != nil {
 					return err
 				}
-
-				// @include
-				re := regexp.MustCompile(`@include\s+['"](?P<include>[^'"]*)['"];`)
-
-				matches := re.FindAllStringSubmatch(string(fileContent), -1)
-
-				outputString := string(fileContent)
-
-				for _, match := range matches {
-					cssFileContent, err := os.ReadFile(filepath.Join(config.SrcDir, "_includes", "css", match[1]))
-					if err != nil {
-						return err
-					}
-
-					outputString = strings.ReplaceAll(outputString, match[0], string(cssFileContent))
-
-				}
-
-				if production {
-					// Minifiy CSS
-					if config.BuildOptions.MinifyCSS {
-						outputString, err = minifier.String("text/css", outputString)
-						if err != nil {
-							return err
-						}
-					}
-				}
-
-				err = os.WriteFile(path, []byte(outputString), 0666)
-				if err != nil {
-					return err
-				}
-
-			} else if filepath.Ext(path) == ".html" {
-
-				fileContent, err := os.ReadFile(path)
-				if err != nil {
-					return err
-				}
-
-				outputString := string(fileContent)
-
-				if production {
-					outputString = strings.Replace(string(fileContent), "<script src=\"http://localhost:35729/livereload.js\"></script>", "", -1)
-
-					// Minify HTML
-					if config.BuildOptions.MinifyHTML {
-						outputString, err = minifier.String("text/html", outputString)
-						if err != nil {
-							return err
-						}
-					}
-				}
-
-				err = os.WriteFile(path, []byte(outputString), 0666)
+			case ".html", ".htm":
+				htmlProcessor(path, productionMode)
 				if err != nil {
 					return err
 				}
@@ -195,7 +130,7 @@ func build(production bool) error {
 			return nil
 		})
 
-		if production {
+		if productionMode {
 			fullPath := filepath.Join(config.BuildDir, file.Name())
 			zipPath := filepath.Join(config.BuildDir, file.Name()+".zip")
 

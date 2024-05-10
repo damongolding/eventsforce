@@ -1,6 +1,12 @@
 version: "3"
 
+dotenv: [".env"]
+
 tasks:
   build:
     cmds:
       - go build -o dist/eventsforce .
+
+  release:
+    cmds:
+      - GITHUB_TOKEN=$GUTHUB_TOKEN goreleaser release --clean
