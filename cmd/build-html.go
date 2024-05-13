@@ -33,14 +33,17 @@ func htmlProcessor(path string, productionMode bool) error {
 		matches := re.FindAllStringSubmatch(string(htmlContent), -1)
 
 		for _, match := range matches {
-			fmt.Println(match)
+			// [[PATH]] tag specifically
+			if strings.TrimSpace(match[1]) == "PATH" {
+				htmlContent = strings.Replace(htmlContent, match[0], "./", -1)
+				continue
+			}
+
 			htmlFileContent, err := os.ReadFile(filepath.Join(config.SrcDir, "_includes", "html", strings.TrimSpace(match[1])+".html"))
 			if err != nil {
 				fmt.Println(err)
 				return err
 			}
-
-			fmt.Println("content", string(htmlFileContent))
 
 			htmlContent = strings.ReplaceAll(htmlContent, match[0], string(htmlFileContent))
 

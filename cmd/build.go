@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
+	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/chromedp/chromedp"
 	"github.com/damongolding/eventsforce/internal/utils"
 	human "github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
@@ -40,12 +44,14 @@ var buildCmd = &cobra.Command{
 		s := green("seconds")
 		l := boldYellow("⚡")
 
-		print(b, t, s, l)
+		fmt.Println(b, t, s, l)
 
 	},
 }
 
 func build(productionMode bool) error {
+
+	var buildOutput []string
 
 	if config.BuildOptions.CleanBuildDir {
 		err := utils.CleanBuildDir(config.BuildDir)
@@ -54,31 +60,42 @@ func build(productionMode bool) error {
 		}
 
 		if productionMode {
-			print(blue("Cleaning build dir"))
+			preBuildSectionTitle, err := utils.OutputStyling("P", "R", "E", " ", "B", "U", "I", "L", "D")
+			if err != nil {
+				return err
+			}
+			fmt.Println(preBuildSectionTitle)
+			fmt.Println(sectionMessage("Cleaning build dir"))
+
+			if err := build(false); err != nil {
+				return err
+			}
+
+			go startScreenshotServer()
+			fmt.Println(sectionMessage("Started screenshot server"))
+
 		}
 	}
 
 	if productionMode {
-		fmt.Println()
-		b := lipgloss.NewStyle().PaddingLeft(1).Foreground(lipgloss.Color("#fff")).Bold(true).Background(lipgloss.Color("#f07e9b")).Render
-		u := lipgloss.NewStyle().Padding(0).Foreground(lipgloss.Color("#fff")).Bold(true).Background(lipgloss.Color("#df73b3")).Render
-		i := lipgloss.NewStyle().Padding(0).Foreground(lipgloss.Color("#fff")).Bold(true).Background(lipgloss.Color("#d36cc3")).Render
-		l := lipgloss.NewStyle().Padding(0).Foreground(lipgloss.Color("#fff")).Bold(true).Background(lipgloss.Color("#c664d5")).Render
-		d := lipgloss.NewStyle().PaddingRight(1).Foreground(lipgloss.Color("#fff")).Bold(true).Background(lipgloss.Color("#b95ce8")).Render
-		s := fmt.Sprintf("%s%s%s%s%s", b("B"), u("U"), i("I"), l("L"), d("D"))
+		s, err := utils.OutputStyling("B", "U", "I", "L", "D")
+		if err != nil {
+			return err
+		}
+		buildOutput = append(buildOutput, s)
 
-		bord := lipgloss.NewStyle().
-			BorderStyle(lipgloss.HiddenBorder()).
-			BorderBottom(true).
-			Padding(0).
-			Render
-		fmt.Println(bord(s))
 	}
 
 	fileList, err := os.ReadDir(config.SrcDir)
 	if err != nil {
 		return err
 	}
+
+	ctx, cancel := chromedp.NewContext(
+		context.Background(),
+	)
+
+	defer cancel()
 
 	for _, file := range fileList {
 
@@ -88,6 +105,10 @@ func build(productionMode bool) error {
 
 		if strings.HasPrefix(file.Name(), "_") {
 			continue
+		}
+
+		if productionMode {
+			pageScreenshot(ctx, file)
 		}
 
 		// Move files
@@ -116,12 +137,12 @@ func build(productionMode bool) error {
 
 			switch filepath.Ext(path) {
 			case ".css":
-				cssProcessor(path, productionMode)
+				err = cssProcessor(path, productionMode)
 				if err != nil {
 					return err
 				}
 			case ".html", ".htm":
-				htmlProcessor(path, productionMode)
+				err = htmlProcessor(path, productionMode)
 				if err != nil {
 					return err
 				}
@@ -146,10 +167,52 @@ func build(productionMode bool) error {
 				return nil
 			}
 
-			print(green("created"), zipPath, "("+human.BigBytes(human.BigByte.SetInt64(zipSize))+")")
+			c := fmt.Sprintf("%s %s %s", green("created"), zipPath, "("+human.BigBytes(human.BigByte.SetInt64(zipSize))+")")
+
+			buildOutput = append(buildOutput, sectionMessage(c))
+
 		}
 
 	}
 
+	if productionMode {
+		out := lipgloss.JoinVertical(lipgloss.Left, buildOutput...)
+		fmt.Println(out)
+	}
+
 	return nil
+}
+
+func startScreenshotServer() {
+
+	http.Handle("GET /", http.FileServer(http.Dir(config.BuildDir)))
+	http.Handle("GET /_assets/", http.FileServer(http.Dir(config.SrcDir)))
+
+	err := http.ListenAndServe(fmt.Sprintf(":%d", devPort), nil)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func pageScreenshot(ctx context.Context, file fs.DirEntry) {
+
+	var buf []byte
+	// capture entire browser viewport, returning png with quality=90
+	if err := chromedp.Run(ctx, fullScreenshot(fmt.Sprint(`http://localhost:`, devPort, "/", file.Name(), "/"), 90, &buf)); err != nil {
+		log.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(config.BuildDir, file.Name(), "screenshot.png"), buf, 0o644); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// fullScreenshot takes a screenshot of the entire browser viewport.
+//
+// Note: chromedp.FullScreenshot overrides the device's emulation settings. Use
+// device.Reset to reset the emulation and viewport settings.
+func fullScreenshot(urlstr string, quality int, res *[]byte) chromedp.Tasks {
+	return chromedp.Tasks{
+		chromedp.Navigate(urlstr),
+		chromedp.FullScreenshot(res, quality),
+	}
 }

@@ -36,8 +36,9 @@ func watcher() {
 
 	// Create and start LiveReload server
 	lr := lrserver.New("ef", lrserver.DefaultPort)
+	lr.SetStatusLog(nil)
 
-	print("Watching", config.SrcDir, "👀", "\n")
+	fmt.Println(sectionMessage("Watching", config.SrcDir, "for changes", "👀"))
 
 	// Create new watcher.
 	watcher, err := fsnotify.NewWatcher()
@@ -64,7 +65,7 @@ func watcher() {
 					if err != nil {
 						panic(err)
 					}
-					print("Rebuilt")
+					fmt.Println(sectionMessage("Rebuilt"))
 					lr.Reload(event.Name)
 				}
 			case err, ok := <-watcher.Errors:
@@ -112,6 +113,13 @@ func serve() error {
 		return err
 	}
 
+	serverSectionTitle, err := utils.OutputStyling("S", "E", "R", "V", "E")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(serverSectionTitle)
+
 	go watcher()
 
 	url := fmt.Sprintf("http://localhost:%d", devPort)
@@ -119,9 +127,9 @@ func serve() error {
 	http.Handle("GET /", http.FileServer(http.Dir(config.BuildDir)))
 	http.Handle("GET /_assets/", http.FileServer(http.Dir(config.SrcDir)))
 
-	print("Serving on", url)
+	fmt.Println(sectionMessage("Serving on", url))
 
-	err := utils.Openbrowser(url)
+	err = utils.Openbrowser(url)
 	if err != nil {
 		return err
 	}

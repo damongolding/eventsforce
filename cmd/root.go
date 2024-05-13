@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -100,7 +101,12 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		print(blue("Using config file:"), blueBold(viper.ConfigFileUsed(), "\n"))
+		s, err := utils.OutputStyling("C", "O", "N", "F", "I", "G")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(s)
+		fmt.Println(sectionMessage("Using config file:", blueBold(viper.ConfigFileUsed())))
 	}
 
 	if err := viper.Unmarshal(&config); err != nil {
@@ -110,4 +116,15 @@ func initConfig() {
 
 func print(message ...string) {
 	fmt.Println("[ef]", strings.Join(message, " "))
+}
+
+func sectionMessage(message ...string) string {
+	sectionOutputStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.HiddenBorder()).
+		BorderLeft(true).BorderBackground(lipgloss.Color(utils.GraidentColours[0])).
+		PaddingLeft(1).
+		Render(strings.Join(message, " "))
+
+	return sectionOutputStyle
+
 }

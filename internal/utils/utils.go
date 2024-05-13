@@ -8,7 +8,57 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
+
+var (
+	// Graident Colurs
+	GraidentColours = []string{
+		"#f07e9b",
+		"#df73b3",
+		"#d36cc3",
+		"#c664d5",
+		"#b95ce8",
+		"#b55aef",
+		"#a953fe",
+		"#a953fe",
+		"#a953fe",
+		"#a953fe",
+		"#a953fe",
+		"#a953fe",
+		"#a953fe",
+	}
+)
+
+func OutputStyling(in ...string) (string, error) {
+
+	var builder strings.Builder
+
+	lettBaseStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#fff")).Bold(true).Padding(0)
+
+	if len(in) == 0 || len(in) > len(GraidentColours) {
+		return "", fmt.Errorf("Too many letters")
+	}
+
+	for i, s := range in {
+		var letterStyle func(...string) string
+
+		if i == 0 {
+			letterStyle = lettBaseStyle.Copy().Background(lipgloss.Color(GraidentColours[i])).PaddingLeft(2).Render
+		} else {
+			letterStyle = lettBaseStyle.Copy().Background(lipgloss.Color(GraidentColours[i])).Render
+		}
+
+		builder.WriteString(letterStyle(s))
+		if i+1 == len(in) {
+			builder.WriteString(letterStyle(" "))
+		}
+	}
+
+	return "\n" + builder.String(), nil
+}
 
 func CopyDir(source string, destination string) error {
 	// Create destination directory

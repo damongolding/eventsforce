@@ -6,10 +6,6 @@ env:
 dotenv: [".env"]
 
 tasks:
-  e:
-    cmds:
-      - echo "{{.HEY}}"
-
   build:
     cmds:
       - go build -o dist/eventsforce .
