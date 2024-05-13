@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  VERSION: v0.1.5
+  VERSION: v0.1.6
 
 dotenv: [".env"]
 
