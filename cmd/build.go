@@ -8,13 +8,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/chromedp/chromedp"
-	"github.com/damongolding/eventsforce/internal/utils"
-	human "github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 )
 
@@ -49,136 +45,22 @@ var buildCmd = &cobra.Command{
 	},
 }
 
-func build(productionMode bool) error {
+func build(buildMode bool) error {
 
-	var buildOutput []string
-
-	if config.BuildOptions.CleanBuildDir {
-		err := utils.CleanBuildDir(config.BuildDir)
-		if err != nil {
-			return err
-		}
-
-		if productionMode {
-			preBuildSectionTitle, err := utils.OutputStyling("P", "R", "E", " ", "B", "U", "I", "L", "D")
-			if err != nil {
-				return err
-			}
-			fmt.Println(preBuildSectionTitle)
-			fmt.Println(sectionMessage("Cleaning build dir"))
-
-			if err := build(false); err != nil {
-				return err
-			}
-
-			go startScreenshotServer()
-			fmt.Println(sectionMessage("Started screenshot server"))
-
-		}
+	// PRE BUILD
+	if err := preBuild(buildMode); err != nil {
+		panic(err)
 	}
+	// END PREBUILD
 
-	if productionMode {
-		s, err := utils.OutputStyling("B", "U", "I", "L", "D")
-		if err != nil {
-			return err
-		}
-		buildOutput = append(buildOutput, s)
-
+	// BUILD
+	if err := mainBuild(buildMode); err != nil {
+		panic(err)
 	}
+	// END BUILD
 
-	fileList, err := os.ReadDir(config.SrcDir)
-	if err != nil {
-		return err
-	}
-
-	ctx, cancel := chromedp.NewContext(
-		context.Background(),
-	)
-
-	defer cancel()
-
-	for _, file := range fileList {
-
-		if !file.IsDir() {
-			continue
-		}
-
-		if strings.HasPrefix(file.Name(), "_") {
-			continue
-		}
-
-		if productionMode {
-			pageScreenshot(ctx, file)
-		}
-
-		// Move files
-		err := utils.CopyDir(filepath.Join(config.SrcDir, file.Name()), filepath.Join(config.BuildDir, file.Name()))
-		if err != nil {
-			return err
-		}
-
-		// Add fonts
-		if config.BuildOptions.AddFonts {
-			err = utils.CopyDir(filepath.Join(config.SrcDir, "_assets", "fonts"), filepath.Join(config.BuildDir, file.Name()))
-			if err != nil {
-				return err
-			}
-		}
-
-		// Do build things
-		filepath.Walk(config.BuildDir, func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			switch filepath.Ext(path) {
-			case ".css":
-				err = cssProcessor(path, productionMode)
-				if err != nil {
-					return err
-				}
-			case ".html", ".htm":
-				err = htmlProcessor(path, productionMode)
-				if err != nil {
-					return err
-				}
-			}
-
-			return nil
-		})
-
-		if productionMode {
-			fullPath := filepath.Join(config.BuildDir, file.Name())
-			zipPath := filepath.Join(config.BuildDir, file.Name()+".zip")
-
-			zipSize, err := utils.ZipDirectory(fullPath, zipPath)
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			err = os.RemoveAll(filepath.Join(config.BuildDir, file.Name()))
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			c := fmt.Sprintf("%s %s %s", green("created"), zipPath, "("+human.BigBytes(human.BigByte.SetInt64(zipSize))+")")
-
-			buildOutput = append(buildOutput, sectionMessage(c))
-
-		}
-
-	}
-
-	if productionMode {
-		out := lipgloss.JoinVertical(lipgloss.Left, buildOutput...)
-		fmt.Println(out)
-	}
+	// POST BUILD
+	// END POST BUILD
 
 	return nil
 }

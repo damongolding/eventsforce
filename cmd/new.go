@@ -1,14 +1,20 @@
 package cmd
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	_ "embed"
+
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
+
+//go:embed new-template-assets
+var newTemplateAssets embed.FS
 
 func init() {
 	rootCmd.AddCommand(newCmd)
@@ -66,7 +72,12 @@ func createNewTemplate(newTemplatePath string) error {
 		}
 		defer f.Close()
 
-		f.WriteString("Hey")
+		indexfile, err := newTemplateAssets.ReadFile("new-template-assets/index.html")
+		if err != nil {
+			return err
+		}
+
+		f.Write(indexfile)
 
 	} else {
 		fmt.Println("Hmmmm looks like that template already exists")

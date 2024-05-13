@@ -5,6 +5,7 @@ go 1.22.3
 require (
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/lipgloss v0.10.0
+	github.com/chromedp/chromedp v0.9.5
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/jaschaephraim/lrserver v0.0.0-20240306232639-afed386b3640
@@ -20,7 +21,6 @@ require (
 	github.com/charmbracelet/bubbles v0.17.2-0.20240108170749-ec883029c8e6 // indirect
 	github.com/charmbracelet/bubbletea v0.25.0 // indirect
 	github.com/chromedp/cdproto v0.0.0-20240512230644-b3296df1660c // indirect
-	github.com/chromedp/chromedp v0.9.5 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
