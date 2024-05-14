@@ -5,6 +5,7 @@
     "cleanBuildDir": true,
     "addFonts": true,
     "minifyHTML": true,
+    "keepCommentsHTML": true,
     "minifyCSS": true
   }
 }

@@ -15,10 +15,11 @@ import (
 )
 
 type BuildOptions struct {
-	CleanBuildDir bool `mapstructure:"cleanBuildDir"`
-	AddFonts      bool `mapstructure:"addFonts"`
-	MinifyHTML    bool `mapstructure:"minifyHTML"`
-	MinifyCSS     bool `mapstructure:"minifyCSS"`
+	CleanBuildDir    bool `mapstructure:"cleanBuildDir"`
+	AddFonts         bool `mapstructure:"addFonts"`
+	MinifyHTML       bool `mapstructure:"minifyHTML"`
+	KeepCommentsHTML bool `mapstructure:"keepCommentsHTML"`
+	MinifyCSS        bool `mapstructure:"minifyCSS"`
 }
 
 type Config struct {
@@ -35,13 +36,14 @@ var (
 	devPort   int
 
 	// Colours
-	whiteBold  = lipgloss.NewStyle().Bold(true).Render
-	green      = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
-	boldGreen  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575")).Render
-	yellow     = lipgloss.NewStyle().Foreground(lipgloss.Color("227")).Render
-	boldYellow = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("227")).Render
-	blue       = lipgloss.NewStyle().Foreground(lipgloss.Color("#9aedff")).Render
-	blueBold   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9aedff")).Render
+	whiteBold          = lipgloss.NewStyle().Bold(true).Render
+	green              = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
+	boldGreen          = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575")).Render
+	boldGreenUnderline = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575")).Underline(true).Render
+	yellow             = lipgloss.NewStyle().Foreground(lipgloss.Color("227")).Render
+	boldYellow         = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("227")).Render
+	blue               = lipgloss.NewStyle().Foreground(lipgloss.Color("#9aedff")).Render
+	blueBold           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9aedff")).Render
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -65,6 +67,7 @@ func Execute() {
 
 func init() {
 
+	cobra.OnInitialize(sayHello)
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
@@ -78,6 +81,38 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func sayHello() {
+
+	fmt.Println(os.Getenv("ass"))
+
+	GraidentColours := []string{
+		"#fec5c5",
+		"#feafb0",
+		"#fe9c9d",
+		"#fe898a",
+		"#ea7aa3",
+		"#d46dc3",
+		"#c061e0",
+		"#a750ff",
+		"#a953fe",
+		"#a953fe",
+		"#a953fe",
+	}
+
+	var builder strings.Builder
+
+	s := "EVENTSFORCE"
+
+	for i, letter := range s {
+		l := lipgloss.NewStyle().PaddingRight(1).Bold(true).Foreground(lipgloss.Color(GraidentColours[i])).Render(string(letter))
+		builder.WriteString(l)
+	}
+
+	out := lipgloss.JoinHorizontal(lipgloss.Left, builder.String())
+	fmt.Println(lipgloss.NewStyle().PaddingLeft(1).BorderForeground(lipgloss.Color("#3b414d")).BorderStyle(lipgloss.NormalBorder()).BorderTop(true).BorderBottom(true).Render(out))
+
 }
 
 // initConfig reads in config file and ENV variables if set.

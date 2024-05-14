@@ -29,14 +29,13 @@ var buildCmd = &cobra.Command{
 		start := time.Now()
 
 		if err := build(true); err != nil {
-			fmt.Println(err)
-			return
+			panic(err)
 		}
 
 		fmt.Println()
 
 		b := green("Built in")
-		t := boldGreen(fmt.Sprintf("%.2f", time.Since(start).Seconds()))
+		t := boldGreenUnderline(fmt.Sprintf("%.2f", time.Since(start).Seconds()))
 		s := green("seconds")
 		l := boldYellow("⚡")
 
@@ -47,36 +46,55 @@ var buildCmd = &cobra.Command{
 
 func build(buildMode bool) error {
 
+	stopScreenshotServer := make(chan bool, 1)
+	defer close(stopScreenshotServer)
+
 	// PRE BUILD
-	if err := preBuild(buildMode); err != nil {
-		panic(err)
+	if err := preBuild(buildMode, stopScreenshotServer); err != nil {
+		return err
 	}
 	// END PREBUILD
 
 	// BUILD
 	if err := mainBuild(buildMode); err != nil {
-		panic(err)
+		return err
 	}
 	// END BUILD
 
 	// POST BUILD
+	if err := postBuild(buildMode, stopScreenshotServer); err != nil {
+		return err
+	}
 	// END POST BUILD
 
 	return nil
 }
 
-func startScreenshotServer() {
+func startScreenshotServer(screenshotServerChannel <-chan bool) {
+
+	server := &http.Server{
+		Addr: fmt.Sprintf(":%d", devPort),
+	}
 
 	http.Handle("GET /", http.FileServer(http.Dir(config.BuildDir)))
 	http.Handle("GET /_assets/", http.FileServer(http.Dir(config.SrcDir)))
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", devPort), nil)
-	if err != nil {
+	go func() {
+		fmt.Println(sectionMessage("Starting screenshot server"))
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
+
+	<-screenshotServerChannel
+
+	fmt.Println(sectionMessage("Shutting down screenshot server"))
+	if err := server.Shutdown(context.Background()); err != nil {
 		panic(err)
 	}
 }
 
-func pageScreenshot(ctx context.Context, file fs.DirEntry) {
+func screenshotTemplate(ctx context.Context, file fs.DirEntry) {
 
 	var buf []byte
 	// capture entire browser viewport, returning png with quality=90
@@ -86,6 +104,8 @@ func pageScreenshot(ctx context.Context, file fs.DirEntry) {
 	if err := os.WriteFile(filepath.Join(config.BuildDir, file.Name(), "screenshot.png"), buf, 0o644); err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println(sectionMessage(green("Created"), filepath.Join(config.BuildDir, file.Name(), "screenshot.png")))
 }
 
 // fullScreenshot takes a screenshot of the entire browser viewport.

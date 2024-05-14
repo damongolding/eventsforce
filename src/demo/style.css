@@ -1,7 +1,0 @@
-@include "base.css";
-@include "demo.css";
-
-h1 {
-    color: red;
-    font-size: 1rem;
-}

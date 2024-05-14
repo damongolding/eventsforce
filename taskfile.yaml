@@ -1,14 +1,14 @@
 version: "3"
 
 env:
-  VERSION: v0.1.7
+  VERSION: v0.1.8
 
 dotenv: [".env"]
 
 tasks:
   build:
     cmds:
-      - go build -o dist/eventsforce .
+      - go build -ldflags "-X github.com/damongolding/eventsforce/cmd.version={{.VERSION}}" -o dist/eventsforce .
 
   tag:
     cmds:
@@ -20,4 +20,4 @@ tasks:
 
   release:
     cmds:
-      - GITHUB_TOKEN=$GUTHUB_TOKEN goreleaser release --clean
+      - GITHUB_TOKEN=$GUTHUB_TOKEN VERSION={{.VERSION}} goreleaser release --clean

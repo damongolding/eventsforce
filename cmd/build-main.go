@@ -8,23 +8,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	human "github.com/dustin/go-humanize"
-
-	"github.com/charmbracelet/lipgloss"
 	"github.com/chromedp/chromedp"
 	"github.com/damongolding/eventsforce/internal/utils"
 )
 
 func mainBuild(buildMode bool) error {
 
-	var buildOutput []string
-
 	if buildMode {
 		s, err := utils.OutputStyling("B", "U", "I", "L", "D")
 		if err != nil {
 			return err
 		}
-		buildOutput = append(buildOutput, s)
+		fmt.Println(s)
 	}
 
 	fileList, err := os.ReadDir(config.SrcDir)
@@ -50,7 +45,7 @@ func mainBuild(buildMode bool) error {
 		}
 
 		if buildMode {
-			pageScreenshot(ctx, file)
+			screenshotTemplate(ctx, file)
 		}
 
 		// Move files
@@ -65,62 +60,44 @@ func mainBuild(buildMode bool) error {
 			if err != nil {
 				return err
 			}
+
+			if buildMode {
+				fmt.Println(sectionMessage(green("Added"), "fonts to", filepath.Join(config.BuildDir, file.Name())))
+			}
 		}
 
-		// Do build things
-		filepath.Walk(config.BuildDir, func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
+	}
+	// Do build things
+	filepath.Walk(config.BuildDir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		switch filepath.Ext(path) {
+		case ".css":
+			if err := cssProcessor(path, buildMode); err != nil {
 				return err
 			}
-
-			if info.IsDir() {
-				return nil
+			if buildMode {
+				fmt.Println(sectionMessage(green("Proccessed"), path))
 			}
 
-			switch filepath.Ext(path) {
-			case ".css":
-				err = cssProcessor(path, buildMode)
-				if err != nil {
-					return err
-				}
-			case ".html", ".htm":
-				err = htmlProcessor(path, buildMode)
-				if err != nil {
-					return err
-				}
+		case ".html", ".htm":
+			if err := htmlProcessor(path, buildMode); err != nil {
+				return err
 			}
-
-			return nil
-		})
-
-		if buildMode {
-			fullPath := filepath.Join(config.BuildDir, file.Name())
-			zipPath := filepath.Join(config.BuildDir, file.Name()+".zip")
-
-			zipSize, err := utils.ZipDirectory(fullPath, zipPath)
-			if err != nil {
-				fmt.Println(err)
-				return nil
+			if buildMode {
+				fmt.Println(sectionMessage(green("Proccessed"), path))
 			}
-
-			err = os.RemoveAll(filepath.Join(config.BuildDir, file.Name()))
-			if err != nil {
-				fmt.Println(err)
-				return nil
-			}
-
-			c := fmt.Sprintf("%s %s %s", green("created"), zipPath, "("+human.BigBytes(human.BigByte.SetInt64(zipSize))+")")
-
-			buildOutput = append(buildOutput, sectionMessage(c))
 
 		}
 
-	}
-
-	if buildMode {
-		out := lipgloss.JoinVertical(lipgloss.Left, buildOutput...)
-		fmt.Println(out)
-	}
+		return nil
+	})
 
 	return nil
 }

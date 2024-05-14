@@ -22,6 +22,8 @@ builds:
       - linux
       - windows
       - darwin
+    ldflags:
+      - "-X github.com/damongolding/eventsforce/cmd.version={{.Env.VERSION}}"
 
 archives:
   - format: tar.gz

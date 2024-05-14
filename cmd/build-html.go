@@ -18,6 +18,7 @@ func htmlProcessor(path string, productionMode bool) error {
 		KeepDocumentTags: true,
 		KeepEndTags:      true,
 		KeepQuotes:       true,
+		KeepComments:     config.BuildOptions.KeepCommentsHTML,
 	})
 
 	fileContent, err := os.ReadFile(path)
@@ -41,8 +42,8 @@ func htmlProcessor(path string, productionMode bool) error {
 
 			htmlFileContent, err := os.ReadFile(filepath.Join(config.SrcDir, "_includes", "html", strings.TrimSpace(match[1])+".html"))
 			if err != nil {
-				fmt.Println(err)
-				return err
+				fmt.Println(sectionMessage(err.Error()))
+				continue
 			}
 
 			htmlContent = strings.ReplaceAll(htmlContent, match[0], string(htmlFileContent))

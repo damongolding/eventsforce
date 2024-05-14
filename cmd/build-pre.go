@@ -7,7 +7,7 @@ import (
 )
 
 // preBuild Things to do beofre the build proccess starts
-func preBuild(buildMode bool) error {
+func preBuild(buildMode bool, stopScreenshotServer <-chan bool) error {
 
 	// Show section title on build
 	if buildMode {
@@ -16,6 +16,9 @@ func preBuild(buildMode bool) error {
 			return err
 		}
 		fmt.Println(preBuildSectionTitle)
+
+		go startScreenshotServer(stopScreenshotServer)
+
 	}
 
 	if config.BuildOptions.CleanBuildDir {
@@ -33,9 +36,6 @@ func preBuild(buildMode bool) error {
 		if err := build(false); err != nil {
 			return err
 		}
-
-		go startScreenshotServer()
-		fmt.Println(sectionMessage("Started screenshot server"))
 
 	}
 
