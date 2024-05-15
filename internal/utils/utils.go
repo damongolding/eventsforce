@@ -40,6 +40,7 @@ var (
 	BoldYellow         = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("227")).Render
 	Blue               = lipgloss.NewStyle().Foreground(lipgloss.Color("#9aedff")).Render
 	BlueBold           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9aedff")).Render
+	Red                = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF5658")).Render
 )
 
 func OutputSectionStyling(in ...string) (string, error) {
@@ -230,4 +231,14 @@ func SectionMessage(message ...string) string {
 
 	return sectionOutputStyle
 
+}
+
+func SectionErrorMessage(message ...string) string {
+	sectionOutputStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.HiddenBorder()).
+		BorderLeft(true).BorderBackground(lipgloss.Color("#FF5658")).
+		PaddingLeft(1).
+		Render(Red(strings.Join(message, " ")))
+
+	return sectionOutputStyle
 }

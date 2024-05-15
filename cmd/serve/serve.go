@@ -48,6 +48,8 @@ func watcher() {
 	// Create and start LiveReload server
 	lr := lrserver.New("ef", lrserver.DefaultPort)
 	lr.SetStatusLog(nil)
+	lr.SetErrorLog(nil)
+	lr.SetStatusLog(nil)
 
 	fmt.Println(utils.SectionMessage("Watching", config.SrcDir, "for changes", "👀"))
 
