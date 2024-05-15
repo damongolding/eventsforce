@@ -18,6 +18,10 @@ tasks:
       - git tag -a $VERSION -m "{{.MESSAGE}}"
       - git push origin $VERSION
 
+  release-local:
+    cmds:
+      - VERSION={{.VERSION}} goreleaser release --snapshot --clean
+
   release:
     cmds:
       - GITHUB_TOKEN=$GUTHUB_TOKEN VERSION={{.VERSION}} goreleaser release --clean
