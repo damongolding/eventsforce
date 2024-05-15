@@ -9,41 +9,16 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/damongolding/eventsforce/cmd/build"
+	"github.com/damongolding/eventsforce/cmd/new"
+	"github.com/damongolding/eventsforce/cmd/serve"
+	"github.com/damongolding/eventsforce/cmd/version"
 	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-type BuildOptions struct {
-	CleanBuildDir    bool `mapstructure:"cleanBuildDir"`
-	AddFonts         bool `mapstructure:"addFonts"`
-	MinifyHTML       bool `mapstructure:"minifyHTML"`
-	KeepCommentsHTML bool `mapstructure:"keepCommentsHTML"`
-	MinifyCSS        bool `mapstructure:"minifyCSS"`
-}
-
-type Config struct {
-	SrcDir       string       `mapstructure:"srcDir"`
-	BuildDir     string       `mapstructure:"buildDir"`
-	BuildOptions BuildOptions `mapstructure:"buildOptions"`
-}
-
 var (
-	cfgFile   string
-	config    Config
-	buildMode bool
-	devMode   bool
-	devPort   int
-
-	// Colours
-	whiteBold          = lipgloss.NewStyle().Bold(true).Render
-	green              = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
-	boldGreen          = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575")).Render
-	boldGreenUnderline = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575")).Underline(true).Render
-	yellow             = lipgloss.NewStyle().Foreground(lipgloss.Color("227")).Render
-	boldYellow         = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("227")).Render
-	blue               = lipgloss.NewStyle().Foreground(lipgloss.Color("#9aedff")).Render
-	blueBold           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9aedff")).Render
+	devPort int
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -67,8 +42,7 @@ func Execute() {
 
 func init() {
 
-	cobra.OnInitialize(sayHello)
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(showHeader)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -76,16 +50,15 @@ func init() {
 
 	rootCmd.PersistentFlags().IntVar(&devPort, "port", 3000, "Port to use for dev server")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/config.json)")
+	// commands
+	rootCmd.AddCommand(version.VersionCmd)
+	rootCmd.AddCommand(new.NewTemplateCmd)
+	rootCmd.AddCommand(build.BuildCmd)
+	rootCmd.AddCommand(serve.ServeCmd)
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func sayHello() {
-
-	fmt.Println(os.Getenv("ass"))
+func showHeader() {
 
 	GraidentColours := []string{
 		"#fec5c5",
@@ -113,40 +86,6 @@ func sayHello() {
 	out := lipgloss.JoinHorizontal(lipgloss.Left, builder.String())
 	fmt.Println(lipgloss.NewStyle().PaddingLeft(1).BorderForeground(lipgloss.Color("#3b414d")).BorderStyle(lipgloss.NormalBorder()).BorderTop(true).BorderBottom(true).Render(out))
 
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".eventsforce" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigFile("config.json")
-
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		s, err := utils.OutputStyling("C", "O", "N", "F", "I", "G")
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(s)
-		fmt.Println(sectionMessage("Using config file:", blueBold(viper.ConfigFileUsed())))
-	}
-
-	if err := viper.Unmarshal(&config); err != nil {
-		panic("Missing config file")
-	}
 }
 
 func print(message ...string) {

@@ -1,14 +1,14 @@
 version: "3"
 
 env:
-  VERSION: v0.1.8
+  VERSION: v0.1.9
 
 dotenv: [".env"]
 
 tasks:
   build:
     cmds:
-      - go build -ldflags "-X github.com/damongolding/eventsforce/cmd.version={{.VERSION}}" -o dist/eventsforce .
+      - go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version={{.VERSION}}" -o dist/eventsforce .
 
   tag:
     cmds:

@@ -30,9 +30,19 @@ var (
 		"#a953fe",
 		"#a953fe",
 	}
+
+	// Colours
+	WhiteBold          = lipgloss.NewStyle().Bold(true).Render
+	Green              = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Render
+	BoldGreen          = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575")).Render
+	BoldGreenUnderline = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#04B575")).Underline(true).Render
+	Yellow             = lipgloss.NewStyle().Foreground(lipgloss.Color("227")).Render
+	BoldYellow         = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("227")).Render
+	Blue               = lipgloss.NewStyle().Foreground(lipgloss.Color("#9aedff")).Render
+	BlueBold           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9aedff")).Render
 )
 
-func OutputStyling(in ...string) (string, error) {
+func OutputSectionStyling(in ...string) (string, error) {
 
 	var builder strings.Builder
 
@@ -209,4 +219,15 @@ func Openbrowser(url string) error {
 	}
 
 	return nil
+}
+
+func SectionMessage(message ...string) string {
+	sectionOutputStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.HiddenBorder()).
+		BorderLeft(true).BorderBackground(lipgloss.Color(GraidentColours[0])).
+		PaddingLeft(1).
+		Render(strings.Join(message, " "))
+
+	return sectionOutputStyle
+
 }

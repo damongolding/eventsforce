@@ -1,4 +1,4 @@
-package cmd
+package new
 
 import (
 	"embed"
@@ -9,19 +9,26 @@ import (
 
 	_ "embed"
 
+	"github.com/damongolding/eventsforce/internal/configuration"
+	"github.com/damongolding/eventsforce/internal/utils"
+
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
-//go:embed new-template-assets
-var newTemplateAssets embed.FS
+var (
+	//go:embed new-template-assets
+	newTemplateAssets embed.FS
+
+	config configuration.Config
+)
 
 func init() {
-	rootCmd.AddCommand(newCmd)
+	config = *configuration.NewConfig()
 }
 
 // rootCmd represents the base command when called without any subcommands
-var newCmd = &cobra.Command{
+var NewTemplateCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Create a new eventsforce template",
 
@@ -45,7 +52,8 @@ var newCmd = &cobra.Command{
 
 		fmt.Println()
 		if err := form.Run(); err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 
 		if createNewTemplateConfim {
@@ -55,9 +63,27 @@ var newCmd = &cobra.Command{
 				panic(err)
 			}
 
-			fmt.Println(blueBold(newTemplateName), "has been created in", blueBold(newTemplatePath))
+			fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(newTemplatePath))
 		}
 	}}
+
+func createFile(path, fileName string) error {
+	// Create HTML file
+	f, err := os.Create(filepath.Join(path, fileName))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fileContents, err := newTemplateAssets.ReadFile("new-template-assets/" + fileName)
+	if err != nil {
+		return err
+	}
+
+	f.Write(fileContents)
+
+	return nil
+}
 
 func createNewTemplate(newTemplatePath string) error {
 
@@ -66,18 +92,15 @@ func createNewTemplate(newTemplatePath string) error {
 			return err
 		}
 
-		f, err := os.Create(filepath.Join(newTemplatePath, "index.html"))
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		indexfile, err := newTemplateAssets.ReadFile("new-template-assets/index.html")
-		if err != nil {
+		// Create HTML file
+		if err := createFile(newTemplatePath, "index.html"); err != nil {
 			return err
 		}
 
-		f.Write(indexfile)
+		// Create CSS file
+		if err := createFile(newTemplatePath, "style.css"); err != nil {
+			return err
+		}
 
 	} else {
 		fmt.Println("Hmmmm looks like that template already exists")
