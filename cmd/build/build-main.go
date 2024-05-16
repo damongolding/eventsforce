@@ -68,7 +68,7 @@ func mainBuild(buildMode bool) error {
 
 	}
 	// Do build things
-	filepath.Walk(config.BuildDir, func(path string, info fs.FileInfo, err error) error {
+	err = filepath.Walk(config.BuildDir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -78,6 +78,13 @@ func mainBuild(buildMode bool) error {
 		}
 
 		switch filepath.Ext(path) {
+		case ".scss":
+			if err := sassProcessor(path, buildMode); err != nil {
+				return err
+			}
+			if buildMode {
+				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), path))
+			}
 		case ".css":
 			if err := cssProcessor(path, buildMode); err != nil {
 				return err
@@ -98,6 +105,9 @@ func mainBuild(buildMode bool) error {
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

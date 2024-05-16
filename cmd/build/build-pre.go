@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/damongolding/eventsforce/internal/utils"
 )
@@ -33,9 +34,14 @@ func preBuild(buildMode bool, stopScreenshotServer <-chan bool) error {
 	}
 
 	if buildMode {
-		if err := Build(false); err != nil {
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		if err := Build(false, &wg); err != nil {
 			return err
 		}
+
+		wg.Wait()
 
 	}
 

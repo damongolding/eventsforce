@@ -36,6 +36,7 @@ var NewTemplateCmd = &cobra.Command{
 
 		var newTemplateName string
 		var createNewTemplateConfim bool
+		var useSass bool
 
 		form := huh.NewForm(
 			huh.NewGroup(
@@ -45,6 +46,10 @@ var NewTemplateCmd = &cobra.Command{
 					Value(&newTemplateName),
 
 				huh.NewConfirm().
+					Title("Use SASS?").
+					Value(&useSass),
+
+				huh.NewConfirm().
 					Title("Ready?").
 					Value(&createNewTemplateConfim),
 			),
@@ -52,15 +57,16 @@ var NewTemplateCmd = &cobra.Command{
 
 		fmt.Println()
 		if err := form.Run(); err != nil {
-			fmt.Println(err)
-			return
+			fmt.Println(utils.SectionErrorMessage(err.Error()))
+			defer os.Exit(1)
 		}
 
 		if createNewTemplateConfim {
 			newTemplatePath := filepath.Join(config.SrcDir, newTemplateName)
 
-			if err := createNewTemplate(newTemplatePath); err != nil {
-				panic(err)
+			if err := createNewTemplate(newTemplatePath, useSass); err != nil {
+				fmt.Println(utils.SectionErrorMessage(err.Error()))
+				defer os.Exit(1)
 			}
 
 			fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(newTemplatePath))
@@ -85,7 +91,7 @@ func createFile(path, fileName string) error {
 	return nil
 }
 
-func createNewTemplate(newTemplatePath string) error {
+func createNewTemplate(newTemplatePath string, useSass bool) error {
 
 	if _, err := os.Stat(newTemplatePath); errors.Is(err, os.ErrNotExist) {
 		if err := os.Mkdir(newTemplatePath, 0750); err != nil {
@@ -97,9 +103,16 @@ func createNewTemplate(newTemplatePath string) error {
 			return err
 		}
 
-		// Create CSS file
-		if err := createFile(newTemplatePath, "style.css"); err != nil {
-			return err
+		if useSass {
+			// Create CSS file
+			if err := createFile(newTemplatePath, "style.scss"); err != nil {
+				return err
+			}
+		} else {
+			// Create CSS file
+			if err := createFile(newTemplatePath, "style.css"); err != nil {
+				return err
+			}
 		}
 
 	} else {

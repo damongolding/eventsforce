@@ -1,2 +1,3 @@
-@include "fonts.css";
-@include "base.css";
+@include "css/reset.css";
+@include "css/fonts.css";
+@include "css/base.css";

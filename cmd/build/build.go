@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/chromedp/chromedp"
@@ -33,33 +33,53 @@ var BuildCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
+		start := time.Now()
 		devPort = cmd.Flag("port").Value.String()
 
-		start := time.Now()
+		defer func(start time.Time) {
+			if err := recover(); err != nil {
+				b := utils.Red("Failed in")
+				t := utils.BoldRedUnderline(fmt.Sprintf("%.2f", time.Since(start).Seconds()))
+				s := utils.Red("seconds")
+				l := utils.BoldYellow("😔")
 
-		if err := Build(true); err != nil {
+				fmt.Println("\n", err)
+
+				fmt.Println("\n", b, t, s, l)
+				os.Exit(1)
+			}
+		}(start)
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+
+		if err := Build(true, &wg); err != nil {
 			panic(err)
 		}
 
-		fmt.Println()
+		wg.Wait()
 
 		b := utils.Green("Built in")
 		t := utils.BoldGreenUnderline(fmt.Sprintf("%.2f", time.Since(start).Seconds()))
 		s := utils.Green("seconds")
 		l := utils.BoldYellow("⚡")
 
-		fmt.Println(b, t, s, l)
+		fmt.Println("\n", b, t, s, l)
 
 	},
 }
 
-func Build(buildMode bool) error {
+func Build(buildMode bool, wg *sync.WaitGroup) error {
 
 	stopScreenshotServer := make(chan bool, 1)
 	defer close(stopScreenshotServer)
+	defer wg.Done()
 
 	if buildMode {
-		config.PrintConfig()
+		if err := config.PrintConfig(); err != nil {
+			return err
+		}
 	}
 
 	// PRE BUILD
@@ -107,18 +127,20 @@ func startScreenshotServer(screenshotServerChannel <-chan bool) {
 	}
 }
 
-func screenshotTemplate(ctx context.Context, file fs.DirEntry) {
+func screenshotTemplate(ctx context.Context, file fs.DirEntry) error {
 
 	var buf []byte
 	// capture entire browser viewport, returning png with quality=90
 	if err := chromedp.Run(ctx, fullScreenshot(fmt.Sprint(`http://localhost:`, devPort, "/", file.Name(), "/"), 90, &buf)); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if err := os.WriteFile(filepath.Join(config.BuildDir, file.Name(), "screenshot.png"), buf, 0o644); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	fmt.Println(utils.SectionMessage(utils.Green("Created"), filepath.Join(config.BuildDir, file.Name(), "screenshot.png")))
+
+	return nil
 }
 
 // fullScreenshot takes a screenshot of the entire browser viewport.

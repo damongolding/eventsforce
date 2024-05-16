@@ -5,7 +5,9 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/damongolding/eventsforce/cmd/build"
@@ -37,9 +39,24 @@ var ServeCmd = &cobra.Command{
 
 		devPort = cmd.Flag("port").Value.String()
 
+		start := time.Now()
+
+		defer func(start time.Time) {
+			if err := recover(); err != nil {
+				b := utils.Red("Failed in")
+				t := utils.BoldRedUnderline(fmt.Sprintf("%.2f", time.Since(start).Seconds()))
+				s := utils.Red("seconds")
+				l := utils.BoldYellow("😔")
+
+				fmt.Println("\n", err)
+
+				fmt.Println("\n", b, t, s, l)
+				os.Exit(1)
+			}
+		}(start)
+
 		if err := Serve(); err != nil {
-			fmt.Print(err)
-			return
+			panic(err)
 		}
 	}}
 
@@ -74,10 +91,14 @@ func watcher() {
 				}
 
 				if event.Has(fsnotify.Write) {
-					err := build.Build(false)
-					if err != nil {
+					var wg sync.WaitGroup
+					wg.Add(1)
+
+					if err := build.Build(false, &wg); err != nil {
 						panic(err)
 					}
+					wg.Wait()
+
 					fmt.Println(utils.SectionMessage("Rebuilt"))
 					lr.Reload(event.Name)
 				}
@@ -122,11 +143,18 @@ func watcher() {
 
 func Serve() error {
 
-	if err := build.Build(false); err != nil {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	if err := build.Build(false, &wg); err != nil {
 		return err
 	}
 
-	config.PrintConfig()
+	wg.Wait()
+
+	if err := config.PrintConfig(); err != nil {
+		return err
+	}
 
 	serverSectionTitle, err := utils.OutputSectionStyling("S", "E", "R", "V", "E")
 	if err != nil {

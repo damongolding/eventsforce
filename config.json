@@ -6,6 +6,7 @@
     "addFonts": true,
     "minifyHTML": true,
     "keepCommentsHTML": true,
-    "minifyCSS": true
+    "minifyCSS": true,
+    "zipDirs": false
   }
 }

@@ -41,6 +41,7 @@ var (
 	Blue               = lipgloss.NewStyle().Foreground(lipgloss.Color("#9aedff")).Render
 	BlueBold           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9aedff")).Render
 	Red                = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF5658")).Render
+	BoldRedUnderline   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF5658")).Underline(true).Render
 )
 
 func OutputSectionStyling(in ...string) (string, error) {

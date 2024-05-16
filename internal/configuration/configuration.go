@@ -15,6 +15,7 @@ type BuildOptions struct {
 	MinifyHTML       bool `mapstructure:"minifyHTML"`
 	KeepCommentsHTML bool `mapstructure:"keepCommentsHTML"`
 	MinifyCSS        bool `mapstructure:"minifyCSS"`
+	ZipDirs          bool `mapstructure:"zipDirs"`
 }
 
 type Config struct {
@@ -25,12 +26,18 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	return initConfig()
+
+	config, err := initConfig()
+	if err != nil {
+		fmt.Println(utils.SectionErrorMessage(err.Error()))
+		os.Exit(1)
+	}
+
+	return config
 }
 
 // InitConfig reads in config file and ENV variables if set.
-func initConfig() *Config {
-
+func initConfig() (*Config, error) {
 	var config Config
 
 	// Find home directory.
@@ -47,23 +54,26 @@ func initConfig() *Config {
 
 	// If a config file is found, read it in.
 	if err := v.ReadInConfig(); err != nil {
-		panic(err)
+		return &config, err
 	}
 
 	if err := v.Unmarshal(&config); err != nil {
-		panic("Missing config file")
+		return &config, err
+
 	}
 
 	config.ConfigUsed = v.ConfigFileUsed()
 
-	return &config
+	return &config, nil
 }
 
-func (c *Config) PrintConfig() {
+func (c *Config) PrintConfig() error {
 	s, err := utils.OutputSectionStyling("C", "O", "N", "F", "I", "G")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Println(s)
 	fmt.Println(utils.SectionMessage("Using config file:", utils.BlueBold(c.ConfigUsed)))
+
+	return nil
 }

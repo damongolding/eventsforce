@@ -37,7 +37,7 @@ func postBuild(buildMode bool, stopScreenshotServer chan<- bool) error {
 			continue
 		}
 
-		if buildMode {
+		if buildMode && config.BuildOptions.ZipDirs {
 			fullPath := filepath.Join(config.BuildDir, file.Name())
 			zipPath := filepath.Join(config.BuildDir, file.Name()+".zip")
 

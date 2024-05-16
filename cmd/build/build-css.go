@@ -27,7 +27,7 @@ func cssProcessor(path string, productionMode bool) error {
 	matches := re.FindAllStringSubmatch(cssContent, -1)
 
 	for _, match := range matches {
-		cssFileContent, err := os.ReadFile(filepath.Join(config.SrcDir, "_includes", "css", match[1]))
+		cssFileContent, err := os.ReadFile(filepath.Join(config.SrcDir, "_includes", match[1]))
 		if err != nil {
 			return err
 		}
