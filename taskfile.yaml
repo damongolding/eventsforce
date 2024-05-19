@@ -29,4 +29,4 @@ tasks:
 
   docker-build:
     cmds:
-      - docker run -it -e "TERM=xterm-256color" -v "${PWD}/:/eventsforce" -p 3000:3000 eventsforce build
+      - docker run -it -e "TERM=xterm-256color" -v "${PWD}/:/eventsforce" -p 3000:3000 --user 1000:1000 eventsforce build

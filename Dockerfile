@@ -1,17 +1,12 @@
-FROM golang:latest
-
-RUN useradd -u 1001 -m iamuser
-
+FROM golang:1.22.3-alpine
 WORKDIR /app
-
 COPY . .
-
-USER 1001
-
 RUN go mod download
-
 RUN go build -o eventsforce-docker .
 
-EXPOSE 3000
+#FROM alpine:latest
+#COPY --from=build /app/eventsforce-docker .
 
+EXPOSE 3000
+EXPOSE 35729
 ENTRYPOINT ["./eventsforce-docker"]
