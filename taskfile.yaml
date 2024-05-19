@@ -25,3 +25,8 @@ tasks:
   release:
     cmds:
       - GITHUB_TOKEN=$GUTHUB_TOKEN VERSION={{.VERSION}} goreleaser release --clean
+
+
+  docker-build:
+    cmds:
+      - docker run -it -e "TERM=xterm-256color" -v "${PWD}/:/eventsforce" -p 3000:3000 eventsforce build
