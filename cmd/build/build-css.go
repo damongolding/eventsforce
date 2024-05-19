@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/tdewolff/minify/v2"
+	minify "github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 )
 
@@ -46,7 +46,7 @@ func cssProcessor(path string, productionMode bool) error {
 		}
 	}
 
-	err = os.WriteFile(path, []byte(cssContent), 0666)
+	err = os.WriteFile(path, []byte(cssContent), 0777)
 	if err != nil {
 		return err
 	}

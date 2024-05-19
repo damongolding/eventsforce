@@ -140,7 +140,7 @@ func CleanBuildDir(buildDir string) error {
 	if err != nil {
 		return err
 	}
-	os.Mkdir(buildDir, 0700)
+	os.Mkdir(buildDir, 0755)
 
 	return nil
 }
