@@ -3,6 +3,7 @@ package configuration
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/spf13/cobra"
@@ -46,9 +47,13 @@ func initConfig() (*Config, error) {
 
 	v := viper.New()
 
-	// Search config in home directory with name ".eventsforce" (without extension).
 	v.AddConfigPath(home)
-	v.SetConfigFile("config.json")
+
+	if utils.RunningInDocker() {
+		v.SetConfigFile("/eventsforce/config.json")
+	} else {
+		v.SetConfigFile("config.json")
+	}
 
 	v.AutomaticEnv() // read in environment variables that match
 
@@ -64,6 +69,11 @@ func initConfig() (*Config, error) {
 
 	config.ConfigUsed = v.ConfigFileUsed()
 
+	if utils.RunningInDocker() {
+		config.SrcDir = filepath.Join("/eventsforce", config.SrcDir)
+		config.BuildDir = filepath.Join("/eventsforce", config.BuildDir)
+	}
+
 	return &config, nil
 }
 
@@ -74,6 +84,10 @@ func (c *Config) PrintConfig() error {
 	}
 	fmt.Println(s)
 	fmt.Println(utils.SectionMessage("Using config file:", utils.BlueBold(c.ConfigUsed)))
+
+	if utils.RunningInDocker() {
+		fmt.Println(utils.SectionMessage("Running via Docker"))
+	}
 
 	return nil
 }

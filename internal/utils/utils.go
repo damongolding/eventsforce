@@ -44,6 +44,13 @@ var (
 	BoldRedUnderline   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF5658")).Underline(true).Render
 )
 
+func RunningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+	return false
+}
+
 func OutputSectionStyling(in ...string) (string, error) {
 
 	var builder strings.Builder
@@ -206,6 +213,10 @@ func ZipDirectory(source string, target string) (int64, error) {
 func Openbrowser(url string) error {
 	var err error
 
+	if RunningInDocker() {
+		return nil
+	}
+
 	switch runtime.GOOS {
 	case "linux":
 		err = exec.Command("xdg-open", url).Start()
@@ -216,6 +227,7 @@ func Openbrowser(url string) error {
 	default:
 		err = fmt.Errorf("unsupported platform")
 	}
+
 	if err != nil {
 		return err
 	}
