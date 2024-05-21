@@ -48,8 +48,8 @@ dockers:
     #
     # Templates: allowed
     build_flag_templates:
-      - "--build-arg version=v{{.Env.VERSION}}"
-      - "--platform linux/amd64,linux/arm64"
+      - "--build-arg=version=v{{.Env.VERSION}}"
+      - "--platform=linux/amd64,linux/arm64"
 
     image_templates:
       - "damongolding/eventsforce:latest"
