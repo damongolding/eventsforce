@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  VERSION: 0.2.4
+  VERSION: 0.2.5
 
 dotenv: [".env"]
 
@@ -23,6 +23,7 @@ tasks:
       - VERSION={{.VERSION}} goreleaser release --snapshot --clean
 
   release:
+    deps: [docker-image-push]
     cmds:
       - GITHUB_TOKEN=$GUTHUB_TOKEN VERSION={{.VERSION}} goreleaser release --clean
 
