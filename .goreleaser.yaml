@@ -43,7 +43,7 @@ changelog:
       - "^test:"
 
 dockers:
-  - use: docker
+  - use: buildx
     # Docker build flags.
     #
     # Templates: allowed
