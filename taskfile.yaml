@@ -15,8 +15,8 @@ tasks:
       - git add .
       - git commit -m "{{.MESSAGE}}"
       - git push
-      - git tag -a $VERSION -m "{{.MESSAGE}}"
-      - git push origin $VERSION
+      - git tag -a v$VERSION -m "{{.MESSAGE}}"
+      - git push origin v$VERSION
 
   release-local:
     cmds:
