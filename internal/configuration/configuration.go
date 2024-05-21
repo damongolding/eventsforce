@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/spf13/cobra"
@@ -83,11 +84,13 @@ func (c *Config) PrintConfig() error {
 		return err
 	}
 	fmt.Println(s)
-	fmt.Println(utils.SectionMessage("Using config file:", utils.BlueBold(c.ConfigUsed)))
 
 	if utils.RunningInDocker() {
-		fmt.Println(utils.SectionMessage("Running via Docker"))
+		system := fmt.Sprintf("(%s/%s)", runtime.GOOS, runtime.GOARCH)
+		fmt.Println(utils.SectionMessage("Running via", utils.BlueBold("🐳 Docker"), utils.BlueBold(system)))
 	}
+
+	fmt.Println(utils.SectionMessage("Using config file:", utils.BlueBold(c.ConfigUsed)))
 
 	return nil
 }

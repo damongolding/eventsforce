@@ -1,14 +1,14 @@
 version: "3"
 
 env:
-  VERSION: v0.2.0
+  VERSION: 0.2.3
 
 dotenv: [".env"]
 
 tasks:
   build:
     cmds:
-      - go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version={{.VERSION}}" -o dist/eventsforce .
+      - go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version=v{{.VERSION}}" -o dist/eventsforce .
 
   tag:
     cmds:
@@ -26,7 +26,26 @@ tasks:
     cmds:
       - GITHUB_TOKEN=$GUTHUB_TOKEN VERSION={{.VERSION}} goreleaser release --clean
 
+  docker-image:
+    cmds:
+      - docker build --build-arg version=v{{.VERSION}} --platform linux/amd64,linux/arm64 -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+
+  docker-image-push:
+    cmds:
+      - docker build --build-arg version=v{{.VERSION}} --platform linux/amd64,linux/arm64 --push -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
 
   docker-build:
     cmds:
-      - docker run -it -e "TERM=xterm-256color" -v "${PWD}/:/eventsforce" -p 3000:3000 --user 1000:1000 eventsforce build
+      - docker run -it --rm -e "TERM=xterm-256color --color=always"  -v "${PWD}/:/eventsforce" --user 1000:1000 damongolding/eventsforce build
+
+  docker-dev:
+    cmds:
+      - docker run --rm -it -e "TERM=xterm-256color" -v "${PWD}/:/eventsforce" -p 3000:3000 -p 35729:35729 --user 1000:1000 damongolding/eventsforce serve
+
+  docker-version:
+    cmds:
+      - docker run -it --rm -e "TERM=xterm-256color" -v "${PWD}/:/eventsforce" damongolding/eventsforce version
+
+  docker-new:
+    cmds:
+      - docker run -it --rm -e "TERM=xterm-256color" -v "${PWD}/:/eventsforce" damongolding/eventsforce new

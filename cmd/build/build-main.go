@@ -45,7 +45,10 @@ func mainBuild(buildMode bool) error {
 		}
 
 		if buildMode {
-			screenshotTemplate(ctx, file)
+			err = screenshotTemplate(ctx, file)
+			if err != nil {
+				return err
+			}
 		}
 
 		// Move files

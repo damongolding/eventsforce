@@ -60,7 +60,13 @@ func sassProcessor(path string, productionMode bool) error {
 		ImportResolver: importResolver{},
 	}
 
-	transpiler, err := godartsass.Start(godartsass.Options{})
+	var options godartsass.Options
+
+	if utils.RunningInDocker() {
+		options.DartSassEmbeddedFilename = "/app/dart-sass/sass"
+	}
+
+	transpiler, err := godartsass.Start(options)
 	if err != nil {
 		return err
 	}

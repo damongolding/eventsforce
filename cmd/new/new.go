@@ -94,7 +94,7 @@ func createFile(path, fileName string) error {
 func createNewTemplate(newTemplatePath string, useSass bool) error {
 
 	if _, err := os.Stat(newTemplatePath); errors.Is(err, os.ErrNotExist) {
-		if err := os.Mkdir(newTemplatePath, 0750); err != nil {
+		if err := os.Mkdir(newTemplatePath, 0755); err != nil {
 			return err
 		}
 

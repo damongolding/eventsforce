@@ -44,6 +44,7 @@ var (
 	BoldRedUnderline   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF5658")).Underline(true).Render
 )
 
+// RunningInDocker check to see if we are running in a docker container
 func RunningInDocker() bool {
 	if _, err := os.Stat("/.dockerenv"); err == nil {
 		return true
