@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  VERSION: 0.2.13
+  VERSION: 0.2.14
 
 dotenv: [".env"]
 
@@ -13,7 +13,7 @@ tasks:
 
   build:
     cmds:
-      - go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version=v{{.VERSION}}" -o dist/eventsforce .
+      - go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version={{.VERSION}}" -o dist/eventsforce .
 
   tag:
     cmds:
@@ -35,14 +35,17 @@ tasks:
 
   docker-image:
     cmds:
-      - docker build --build-arg VERSION=v{{.VERSION}} --build-arg SASS_VERSION={{.SASS_VERSION}} -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+      - docker build --build-arg VERSION={{.VERSION}} --build-arg SASS_VERSION={{.SASS_VERSION}} -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
     vars:
       SASS_VERSION:
         sh: 'curl -L -H "Accept: application/vnd.github+json" https://api.github.com/repos/sass/dart-sass/releases/latest | jq -r ".tag_name"'
 
   docker-image-push:
     cmds:
-      - docker build --build-arg VERSION=v{{.VERSION}} --platform linux/amd64,linux/arm64 --push -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+      - docker build --build-arg VERSION={{.VERSION}} --build-arg SASS_VERSION={{.SASS_VERSION}} --platform linux/amd64,linux/arm64 --push -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+    vars:
+      SASS_VERSION:
+        sh: 'curl -L -H "Accept: application/vnd.github+json" https://api.github.com/repos/sass/dart-sass/releases/latest | jq -r ".tag_name"'
 
   docker-build:
     cmds:
