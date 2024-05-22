@@ -28,10 +28,17 @@ func mainBuild(buildMode bool) error {
 	}
 
 	// Spin up a headless browser for screenshots
-	ctx, cancel := chromedp.NewContext(
-		context.Background(),
+
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
 	)
 
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+
+	ctx, cancel := chromedp.NewContext(
+		allocCtx,
+	)
 	defer cancel()
 
 	for _, file := range fileList {
