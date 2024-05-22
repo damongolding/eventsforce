@@ -68,7 +68,7 @@ func watcher() {
 	lr.SetErrorLog(nil)
 	lr.SetStatusLog(nil)
 
-	fmt.Println(utils.SectionMessage("Watching", config.SrcDir, "for changes", "👀"))
+	fmt.Println(utils.SectionMessage("Watching", utils.RemoveDockerPathPrefix(config.SrcDir), "for changes", "👀"))
 
 	// Create new watcher.
 	watcher, err := fsnotify.NewWatcher()
