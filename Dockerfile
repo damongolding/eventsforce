@@ -30,7 +30,7 @@ FROM  zenika/alpine-chrome:latest
 
 WORKDIR /
 
-COPY --from=build /app/eventsforce-docker .
+COPY --from=build /app/eventsforce .
 COPY --from=build /app/dart-sass ./dart-sass
 
 EXPOSE 3000
