@@ -71,8 +71,8 @@ func initConfig() (*Config, error) {
 	config.ConfigUsed = v.ConfigFileUsed()
 
 	if utils.RunningInDocker() {
-		config.SrcDir = filepath.Join("/eventsforce", config.SrcDir)
-		config.BuildDir = filepath.Join("/eventsforce", config.BuildDir)
+		config.SrcDir = filepath.Join("/templates", config.SrcDir)
+		config.BuildDir = filepath.Join("/templates", config.BuildDir)
 	}
 
 	return &config, nil
