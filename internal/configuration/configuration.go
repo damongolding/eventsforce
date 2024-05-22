@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -38,6 +39,47 @@ func NewConfig() *Config {
 	return config
 }
 
+// findConfigFile tries to find the ocnfig file. Looking in the obvious places first
+func findConfigFile(pwd string) (string, error) {
+
+	var foundPath string
+
+	if _, err := os.Stat("/templates/config.json"); err == nil {
+		return "/templates/config.json", nil
+	} else if _, err := os.Stat("./config.json"); err == nil {
+		return "./config.json", nil
+	}
+
+	// Lets GO fishing...
+	err := filepath.Walk(pwd, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.Name() == "config.json" {
+			foundPath = path
+			return nil
+		}
+
+		return nil
+	})
+
+	err = filepath.Walk(filepath.Dir(pwd), func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.Name() == "config.json" {
+			foundPath = path
+			return nil
+		}
+
+		return nil
+	})
+
+	return foundPath, err
+}
+
 // InitConfig reads in config file and ENV variables if set.
 func initConfig() (*Config, error) {
 	var config Config
@@ -50,11 +92,23 @@ func initConfig() (*Config, error) {
 
 	v.AddConfigPath(home)
 
-	if utils.RunningInDocker() {
-		v.SetConfigFile("/eventsforce/config.json")
-	} else {
-		v.SetConfigFile("config.json")
+	exe, err := os.Executable()
+	if err != nil {
+		return &config, err
 	}
+
+	pwd := filepath.Dir(exe)
+	pwd, err = filepath.Abs(pwd)
+	if err != nil {
+		return &config, err
+	}
+
+	configPath, err := findConfigFile(pwd)
+	if err != nil || configPath == "" {
+		return &config, err
+	}
+
+	v.SetConfigFile(configPath)
 
 	v.AutomaticEnv() // read in environment variables that match
 
@@ -65,7 +119,6 @@ func initConfig() (*Config, error) {
 
 	if err := v.Unmarshal(&config); err != nil {
 		return &config, err
-
 	}
 
 	config.ConfigUsed = v.ConfigFileUsed()
@@ -88,6 +141,9 @@ func (c *Config) PrintConfig() error {
 	if utils.RunningInDocker() {
 		system := fmt.Sprintf("(%s/%s)", runtime.GOOS, runtime.GOARCH)
 		fmt.Println(utils.SectionMessage("Running via", utils.BlueBold("🐳 Docker"), utils.BlueBold(system)))
+	} else {
+		system := fmt.Sprintf("(%s/%s)", runtime.GOOS, runtime.GOARCH)
+		fmt.Println(utils.SectionMessage("Running", utils.BlueBold("natively"), utils.BlueBold(system)))
 	}
 
 	fmt.Println(utils.SectionMessage("Using config file:", utils.BlueBold(c.ConfigUsed)))
