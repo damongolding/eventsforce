@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +15,7 @@ var VersionCmd = &cobra.Command{
 	Short: "Show the version",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		v := lipgloss.NewStyle().Bold(true).Padding(1, 0).Render(version)
-		fmt.Println("You are currently running", v)
+		versionString := lipgloss.NewStyle().Bold(true).Padding(1, 0).Render("You are currently running", utils.BoldGreen(version))
+		fmt.Println(versionString)
 	},
 }
