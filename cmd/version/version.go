@@ -14,6 +14,7 @@ var VersionCmd = &cobra.Command{
 	Short: "Show the version",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(lipgloss.NewStyle().Bold(true).Padding(1, 0).Render(version))
+		v := lipgloss.NewStyle().Bold(true).Padding(1, 0).Render(version)
+		fmt.Println("You are currently running", v)
 	},
 }

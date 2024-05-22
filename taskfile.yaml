@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  VERSION: 0.2.5
+  VERSION: 0.2.6
 
 dotenv: [".env"]
 
@@ -26,14 +26,15 @@ tasks:
     deps: [docker-image-push]
     cmds:
       - GITHUB_TOKEN=$GUTHUB_TOKEN VERSION={{.VERSION}} goreleaser release --clean
+      - rm -r dist
 
   docker-image:
     cmds:
-      - docker build --build-arg version=v{{.VERSION}} --platform linux/amd64,linux/arm64 -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+      - docker build --build-arg VERSION=v{{.VERSION}} --platform linux/amd64,linux/arm64 -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
 
   docker-image-push:
     cmds:
-      - docker build --build-arg version=v{{.VERSION}} --platform linux/amd64,linux/arm64 --push -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+      - docker build --build-arg VERSION=v{{.VERSION}} --platform linux/amd64,linux/arm64 --push -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
 
   docker-build:
     cmds:
