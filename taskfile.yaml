@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  VERSION: 0.2.12
+  VERSION: 0.2.13
 
 dotenv: [".env"]
 
@@ -35,7 +35,10 @@ tasks:
 
   docker-image:
     cmds:
-      - docker build --build-arg VERSION=v{{.VERSION}} -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+      - docker build --build-arg VERSION=v{{.VERSION}} --build-arg SASS_VERSION={{.SASS_VERSION}} -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+    vars:
+      SASS_VERSION:
+        sh: 'curl -L -H "Accept: application/vnd.github+json" https://api.github.com/repos/sass/dart-sass/releases/latest | jq -r ".tag_name"'
 
   docker-image-push:
     cmds:

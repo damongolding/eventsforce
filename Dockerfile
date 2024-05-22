@@ -3,6 +3,7 @@ FROM --platform=$BUILDPLATFORM golang:1.22.3-alpine AS build
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
+ARG SASS_VERSION
 
 WORKDIR /app
 
@@ -13,12 +14,12 @@ RUN apk --no-cache add curl
 
 # add Dart SASS
 RUN if [ "$TARGETARCH" = "amd64" ] ; then \
-    curl -O -L https://github.com/sass/dart-sass/releases/download/1.77.2/dart-sass-1.77.2-linux-x64-musl.tar.gz ; else \
-    curl -O -L https://github.com/sass/dart-sass/releases/download/1.77.2/dart-sass-1.77.2-linux-$TARGETARCH-musl.tar.gz ; fi
+    curl -O -L https://github.com/sass/dart-sass/releases/download/1.77.2/dart-sass-$SASS_VERSION-linux-x64-musl.tar.gz ; else \
+    curl -O -L https://github.com/sass/dart-sass/releases/download/1.77.2/dart-sass-$SASS_VERSION-linux-$TARGETARCH-musl.tar.gz ; fi
 
 RUN if [ "$TARGETARCH" = "amd64" ] ; then \
-    tar -zxvf dart-sass-1.77.2-linux-x64-musl.tar.gz ; else \
-    tar -zxvf dart-sass-1.77.2-linux-$TARGETARCH-musl.tar.gz ; fi
+    tar -zxvf dart-sass-$SASS_VERSION-linux-x64-musl.tar.gz ; else \
+    tar -zxvf dart-sass-$SASS_VERSION-linux-$TARGETARCH-musl.tar.gz ; fi
 
 
 RUN go mod download
