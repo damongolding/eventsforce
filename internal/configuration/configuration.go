@@ -46,8 +46,8 @@ func findConfigFile(pwd string) (string, error) {
 
 	if _, err := os.Stat("/templates/config.json"); err == nil {
 		return "/templates/config.json", nil
-	} else if _, err := os.Stat("./config.json"); err == nil {
-		return "./config.json", nil
+	} else if _, err := os.Stat("config.json"); err == nil {
+		return "config.json", nil
 	}
 
 	// Lets GO fishing...
@@ -146,7 +146,7 @@ func (c *Config) PrintConfig() error {
 		fmt.Println(utils.SectionMessage("Running", utils.BlueBold("natively"), utils.BlueBold(system)))
 	}
 
-	fmt.Println(utils.SectionMessage("Using config file:", utils.BlueBold(c.ConfigUsed)))
+	fmt.Println(utils.SectionMessage("Using config file:", utils.BlueBold(utils.RemoveDockerPathPrefix(c.ConfigUsed))))
 
 	return nil
 }

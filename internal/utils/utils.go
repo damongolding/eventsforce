@@ -256,3 +256,11 @@ func SectionErrorMessage(message ...string) string {
 
 	return sectionOutputStyle
 }
+
+func RemoveDockerPathPrefix(path string) string {
+	if RunningInDocker() {
+		return strings.Replace(path, "/templates/", "", -1)
+	}
+
+	return path
+}

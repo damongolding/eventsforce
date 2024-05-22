@@ -51,7 +51,7 @@ func postBuild(buildMode bool, stopScreenshotServer chan<- bool) error {
 				return err
 			}
 
-			c := fmt.Sprintf("%s %s %s", utils.Green("created"), zipPath, "("+human.BigBytes(human.BigByte.SetInt64(zipSize))+")")
+			c := fmt.Sprintf("%s %s %s", utils.Green("created"), utils.RemoveDockerPathPrefix(zipPath), "("+human.BigBytes(human.BigByte.SetInt64(zipSize))+")")
 
 			fmt.Println(utils.SectionMessage(c))
 

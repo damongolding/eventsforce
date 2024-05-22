@@ -44,6 +44,8 @@ func mainBuild(buildMode bool) error {
 			continue
 		}
 
+		fullFilePath := filepath.Join(config.BuildDir, file.Name())
+
 		if buildMode {
 			err = screenshotTemplate(ctx, file)
 			if err != nil {
@@ -52,20 +54,20 @@ func mainBuild(buildMode bool) error {
 		}
 
 		// Move files
-		err := utils.CopyDir(filepath.Join(config.SrcDir, file.Name()), filepath.Join(config.BuildDir, file.Name()))
+		err := utils.CopyDir(filepath.Join(config.SrcDir, file.Name()), fullFilePath)
 		if err != nil {
 			return err
 		}
 
 		// Add fonts
 		if config.BuildOptions.AddFonts {
-			err = utils.CopyDir(filepath.Join(config.SrcDir, "_assets", "fonts"), filepath.Join(config.BuildDir, file.Name()))
+			err = utils.CopyDir(filepath.Join(config.SrcDir, "_assets", "fonts"), fullFilePath)
 			if err != nil {
 				return err
 			}
 
 			if buildMode {
-				fmt.Println(utils.SectionMessage(utils.Green("Added"), "fonts to", filepath.Join(config.BuildDir, file.Name())))
+				fmt.Println(utils.SectionMessage(utils.Green("Added"), "fonts to", utils.RemoveDockerPathPrefix(fullFilePath)))
 			}
 		}
 
@@ -86,14 +88,14 @@ func mainBuild(buildMode bool) error {
 				return err
 			}
 			if buildMode {
-				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), path))
+				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
 			}
 		case ".css":
 			if err := cssProcessor(path, buildMode); err != nil {
 				return err
 			}
 			if buildMode {
-				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), path))
+				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
 			}
 
 		case ".html", ".htm":
@@ -101,9 +103,8 @@ func mainBuild(buildMode bool) error {
 				return err
 			}
 			if buildMode {
-				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), path))
+				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
 			}
-
 		}
 
 		return nil

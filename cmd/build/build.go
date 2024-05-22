@@ -138,7 +138,7 @@ func screenshotTemplate(ctx context.Context, file fs.DirEntry) error {
 		return err
 	}
 
-	fmt.Println(utils.SectionMessage(utils.Green("Created"), filepath.Join(config.BuildDir, file.Name(), "screenshot.png")))
+	fmt.Println(utils.SectionMessage(utils.Green("Created"), utils.RemoveDockerPathPrefix(filepath.Join(config.BuildDir, file.Name(), "screenshot.png"))))
 
 	return nil
 }
