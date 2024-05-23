@@ -90,13 +90,13 @@ func mainBuild(buildMode bool) error {
 		}
 
 		switch filepath.Ext(path) {
-		case ".scss":
-			if err := sassProcessor(path, buildMode); err != nil {
-				return err
-			}
-			if buildMode {
-				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
-			}
+		// case ".scss":
+		// 	if err := sassProcessor(path, buildMode); err != nil {
+		// 		return err
+		// 	}
+		// 	if buildMode {
+		// 		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
+		// 	}
 		case ".css":
 			if err := cssProcessor(path, buildMode); err != nil {
 				return err

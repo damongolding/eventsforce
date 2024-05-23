@@ -45,9 +45,9 @@ var NewTemplateCmd = &cobra.Command{
 					Description("The name of the new template").
 					Value(&newTemplateName),
 
-				huh.NewConfirm().
-					Title("Use SASS?").
-					Value(&useSass),
+				// huh.NewConfirm().
+				// 	Title("Use SASS?").
+				// 	Value(&useSass),
 
 				huh.NewConfirm().
 					Title("Ready?").

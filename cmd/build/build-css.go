@@ -10,6 +10,31 @@ import (
 	"github.com/tdewolff/minify/v2/css"
 )
 
+// addCssIncludes processes css @inlude tags, runs recursively
+func addCssIncludes(cssContent string) (string, error) {
+
+	// @include
+	re := regexp.MustCompile(`@include\s+['"](?P<include>[^'"]*)['"];`)
+
+	matches := re.FindAllStringSubmatch(cssContent, -1)
+
+	for i, match := range matches {
+		cssFileContent, err := os.ReadFile(filepath.Join(config.SrcDir, "_includes", match[1]))
+		if err != nil {
+			return cssContent, err
+		}
+
+		cssContent = strings.ReplaceAll(cssContent, match[0], string(cssFileContent))
+
+		if i+1 == len(matches) {
+			return addCssIncludes(cssContent)
+		}
+
+	}
+
+	return cssContent, nil
+}
+
 func cssProcessor(path string, productionMode bool) error {
 	minifier := minify.New()
 	minifier.AddFunc("text/css", css.Minify)
@@ -21,19 +46,9 @@ func cssProcessor(path string, productionMode bool) error {
 
 	cssContent := string(fileContent)
 
-	// @include
-	re := regexp.MustCompile(`@include\s+['"](?P<include>[^'"]*)['"];`)
-
-	matches := re.FindAllStringSubmatch(cssContent, -1)
-
-	for _, match := range matches {
-		cssFileContent, err := os.ReadFile(filepath.Join(config.SrcDir, "_includes", match[1]))
-		if err != nil {
-			return err
-		}
-
-		cssContent = strings.ReplaceAll(cssContent, match[0], string(cssFileContent))
-
+	cssContent, err = addCssIncludes(cssContent)
+	if err != nil {
+		return err
 	}
 
 	if productionMode {

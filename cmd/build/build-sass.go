@@ -16,6 +16,7 @@ import (
 type importResolver struct{}
 
 func (i importResolver) CanonicalizeURL(url string) (string, error) {
+	url = strings.Replace(url, "file://", "", -1)
 	return fmt.Sprintf("file://%s", url), nil
 }
 
@@ -23,8 +24,12 @@ func (t importResolver) Load(url string) (godartsass.Import, error) {
 
 	includeDir := filepath.Join(config.SrcDir, "_includes")
 
+	fmt.Println("trying to open", url)
+
 	filePath := strings.Replace(url, "file://", "", -1)
 	filePath = filepath.Join(includeDir, filePath)
+
+	fmt.Println("trying to open", filePath)
 
 	b, err := os.ReadFile(filePath)
 	if err != nil {
