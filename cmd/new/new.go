@@ -36,7 +36,7 @@ var NewTemplateCmd = &cobra.Command{
 
 		var newTemplateName string
 		var createNewTemplateConfim bool
-		var useSass bool
+		var useTailwind bool
 
 		form := huh.NewForm(
 			huh.NewGroup(
@@ -45,9 +45,9 @@ var NewTemplateCmd = &cobra.Command{
 					Description("The name of the new template").
 					Value(&newTemplateName),
 
-				// huh.NewConfirm().
-				// 	Title("Use SASS?").
-				// 	Value(&useSass),
+				huh.NewConfirm().
+					Title("Use Tailwind?").
+					Value(&useTailwind),
 
 				huh.NewConfirm().
 					Title("Ready?").
@@ -64,7 +64,7 @@ var NewTemplateCmd = &cobra.Command{
 		if createNewTemplateConfim {
 			newTemplatePath := filepath.Join(config.SrcDir, newTemplateName)
 
-			if err := createNewTemplate(newTemplatePath, useSass); err != nil {
+			if err := createNewTemplate(newTemplatePath, useTailwind); err != nil {
 				fmt.Println(utils.SectionErrorMessage(err.Error()))
 				defer os.Exit(1)
 			}
@@ -73,9 +73,9 @@ var NewTemplateCmd = &cobra.Command{
 		}
 	}}
 
-func createFile(path, fileName string) error {
+func createFile(path, fileName, newFileName string) error {
 	// Create HTML file
-	f, err := os.Create(filepath.Join(path, fileName))
+	f, err := os.Create(filepath.Join(path, newFileName))
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func createFile(path, fileName string) error {
 	return nil
 }
 
-func createNewTemplate(newTemplatePath string, useSass bool) error {
+func createNewTemplate(newTemplatePath string, useTailwind bool) error {
 
 	if _, err := os.Stat(newTemplatePath); errors.Is(err, os.ErrNotExist) {
 		if err := os.Mkdir(newTemplatePath, 0755); err != nil {
@@ -99,18 +99,18 @@ func createNewTemplate(newTemplatePath string, useSass bool) error {
 		}
 
 		// Create HTML file
-		if err := createFile(newTemplatePath, "index.html"); err != nil {
+		if err := createFile(newTemplatePath, "index.html", "index.html"); err != nil {
 			return err
 		}
 
-		if useSass {
+		if useTailwind {
 			// Create CSS file
-			if err := createFile(newTemplatePath, "style.scss"); err != nil {
+			if err := createFile(newTemplatePath, "style-tailwind.css", "style.css"); err != nil {
 				return err
 			}
 		} else {
 			// Create CSS file
-			if err := createFile(newTemplatePath, "style.css"); err != nil {
+			if err := createFile(newTemplatePath, "style.css", "style.css"); err != nil {
 				return err
 			}
 		}
