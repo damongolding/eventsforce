@@ -67,7 +67,7 @@ func sassProcessor(path string, productionMode bool) error {
 
 	var options godartsass.Options
 
-	if utils.RunningInDocker() {
+	if config.InContainer {
 		options.DartSassEmbeddedFilename = "/dart-sass/sass"
 	}
 

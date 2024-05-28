@@ -1,11 +1,14 @@
 package build
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/damongolding/eventsforce/internal/utils"
 	minify "github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 )
@@ -36,6 +39,7 @@ func addCssIncludes(cssContent string) (string, error) {
 }
 
 func cssProcessor(path string, productionMode bool) error {
+
 	minifier := minify.New()
 	minifier.AddFunc("text/css", css.Minify)
 
@@ -66,5 +70,15 @@ func cssProcessor(path string, productionMode bool) error {
 		return err
 	}
 
+	ctx := context.Background()
+	if err := Tailwind(ctx, path, "--minify"); err != nil {
+		return err
+	}
+
+	if productionMode {
+		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
+	}
+
 	return nil
+
 }

@@ -10,9 +10,18 @@ import (
 
 	"github.com/chromedp/chromedp"
 	"github.com/damongolding/eventsforce/internal/utils"
+	"golang.org/x/sync/errgroup"
 )
 
 func mainBuild(buildMode bool) error {
+
+	defer func() interface{} {
+		if err := recover(); err != nil {
+			fmt.Println("\n", err)
+			return err
+		}
+		return nil
+	}()
 
 	if buildMode {
 		s, err := utils.OutputSectionStyling("B", "U", "I", "L", "D")
@@ -80,7 +89,10 @@ func mainBuild(buildMode bool) error {
 
 	}
 	// Do build things
-	err = filepath.Walk(config.BuildDir, func(path string, info fs.FileInfo, err error) error {
+
+	buildErrors, ctx := errgroup.WithContext(ctx)
+
+	if err := filepath.Walk(config.BuildDir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -98,25 +110,24 @@ func mainBuild(buildMode bool) error {
 		// 		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
 		// 	}
 		case ".css":
-			if err := cssProcessor(path, buildMode); err != nil {
+			buildErrors.Go(func() error {
+				err := cssProcessor(path, buildMode)
 				return err
-			}
-			if buildMode {
-				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
-			}
+			})
 
 		case ".html", ".htm":
-			if err := htmlProcessor(path, buildMode); err != nil {
+			buildErrors.Go(func() error {
+				err := htmlProcessor(path, buildMode)
 				return err
-			}
-			if buildMode {
-				fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
-			}
+			})
 		}
 
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
+		return err
+	}
+
+	if err := buildErrors.Wait(); err != nil {
 		return err
 	}
 

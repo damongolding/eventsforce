@@ -26,6 +26,7 @@ type Config struct {
 	SrcDir       string       `mapstructure:"srcDir"`
 	BuildDir     string       `mapstructure:"buildDir"`
 	BuildOptions BuildOptions `mapstructure:"buildOptions"`
+	InContainer  bool
 }
 
 func NewConfig() *Config {
@@ -124,6 +125,7 @@ func initConfig() (*Config, error) {
 	config.ConfigUsed = v.ConfigFileUsed()
 
 	if utils.RunningInDocker() {
+		config.InContainer = true
 		config.SrcDir = filepath.Join("/templates", config.SrcDir)
 		config.BuildDir = filepath.Join("/templates", config.BuildDir)
 	}
@@ -138,7 +140,7 @@ func (c *Config) PrintConfig() error {
 	}
 	fmt.Println(s)
 
-	if utils.RunningInDocker() {
+	if c.InContainer {
 		system := fmt.Sprintf("(%s/%s)", runtime.GOOS, runtime.GOARCH)
 		fmt.Println(utils.SectionMessage("Running via", utils.BlueBold("🐳 Docker"), utils.BlueBold(system)))
 	} else {

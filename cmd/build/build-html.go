@@ -50,6 +50,8 @@ func htmlProcessor(path string, productionMode bool) error {
 			htmlContent = strings.ReplaceAll(htmlContent, match[0], string(htmlFileContent))
 
 		}
+		// Add live reload tag
+		htmlContent = strings.Replace(htmlContent, "</body>", "<script src=\"http://localhost:35729/livereload.js\"></script></body>", -1)
 	}
 
 	if productionMode {
@@ -69,5 +71,10 @@ func htmlProcessor(path string, productionMode bool) error {
 		return err
 	}
 
+	if productionMode {
+		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
+	}
+
 	return nil
+
 }
