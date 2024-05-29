@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
 
@@ -25,6 +26,10 @@ var (
 
 func init() {
 	config = *configuration.NewConfig()
+}
+
+type CssTemplate struct {
+	Tailwind bool
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -73,9 +78,9 @@ var NewTemplateCmd = &cobra.Command{
 		}
 	}}
 
-func createFile(path, fileName, newFileName string) error {
+func createHTML(path, fileName string) error {
 	// Create HTML file
-	f, err := os.Create(filepath.Join(path, newFileName))
+	f, err := os.Create(filepath.Join(path, fileName))
 	if err != nil {
 		return err
 	}
@@ -91,6 +96,30 @@ func createFile(path, fileName, newFileName string) error {
 	return nil
 }
 
+func createCSS(path, filename string, useTailwind bool) error {
+	f, err := os.Create(filepath.Join(path, filename))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fileContents, err := newTemplateAssets.ReadFile("new-template-assets/style.css")
+	if err != nil {
+		return err
+	}
+
+	tmpl, err := template.New("style").Parse(string(fileContents))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(f, CssTemplate{Tailwind: useTailwind})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func createNewTemplate(newTemplatePath string, useTailwind bool) error {
 
 	if _, err := os.Stat(newTemplatePath); errors.Is(err, os.ErrNotExist) {
@@ -99,20 +128,13 @@ func createNewTemplate(newTemplatePath string, useTailwind bool) error {
 		}
 
 		// Create HTML file
-		if err := createFile(newTemplatePath, "index.html", "index.html"); err != nil {
+		if err := createHTML(newTemplatePath, "index.html"); err != nil {
 			return err
 		}
 
-		if useTailwind {
-			// Create CSS file
-			if err := createFile(newTemplatePath, "style-tailwind.css", "style.css"); err != nil {
-				return err
-			}
-		} else {
-			// Create CSS file
-			if err := createFile(newTemplatePath, "style.css", "style.css"); err != nil {
-				return err
-			}
+		// Create CSS
+		if err := createCSS(newTemplatePath, "style.css", useTailwind); err != nil {
+			return err
 		}
 
 	} else {

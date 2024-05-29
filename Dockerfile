@@ -12,16 +12,6 @@ COPY . .
 # Install curl
 RUN apk --no-cache add curl
 
-# add Dart SASS
-# RUN if [ "$TARGETARCH" = "amd64" ] ; then \
-#     curl -sOL https://github.com/sass/dart-sass/releases/download/1.77.2/dart-sass-$SASS_VERSION-linux-x64-musl.tar.gz ; else \
-#     curl -sOL https://github.com/sass/dart-sass/releases/download/1.77.2/dart-sass-$SASS_VERSION-linux-$TARGETARCH-musl.tar.gz ; fi
-
-# RUN if [ "$TARGETARCH" = "amd64" ] ; then \
-#     tar -zxvf dart-sass-$SASS_VERSION-linux-x64-musl.tar.gz ; else \
-#     tar -zxvf dart-sass-$SASS_VERSION-linux-$TARGETARCH-musl.tar.gz ; fi
-
-
 # add Tailwind
 RUN curl -sOL https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-$TARGETOS-$TARGETARCH
 RUN chmod +x tailwindcss-$TARGETOS-$TARGETARCH
