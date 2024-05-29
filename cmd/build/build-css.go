@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/damongolding/eventsforce/internal/utils"
 	minify "github.com/tdewolff/minify/v2"
@@ -40,8 +41,12 @@ func addCssIncludes(cssContent string) (string, error) {
 
 func cssProcessor(path string, productionMode bool) error {
 
+	start := time.Now()
+
 	minifier := minify.New()
 	minifier.AddFunc("text/css", css.Minify)
+
+	usingTailwaind := false
 
 	fileContent, err := os.ReadFile(path)
 	if err != nil {
@@ -53,6 +58,10 @@ func cssProcessor(path string, productionMode bool) error {
 	cssContent, err = addCssIncludes(cssContent)
 	if err != nil {
 		return err
+	}
+
+	if strings.Contains(cssContent, "@tailwind") {
+		usingTailwaind = true
 	}
 
 	if productionMode {
@@ -70,13 +79,22 @@ func cssProcessor(path string, productionMode bool) error {
 		return err
 	}
 
-	ctx := context.Background()
-	if err := Tailwind(ctx, path, "--minify"); err != nil {
-		return err
+	if usingTailwaind {
+		ctx := context.Background()
+		if err := Tailwind(ctx, path, "--minify"); err != nil {
+			return err
+		}
 	}
 
 	if productionMode {
-		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
+
+		done := fmt.Sprintf("[%.2f]", time.Since(start).Seconds())
+
+		if usingTailwaind {
+			fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.Blue(done), utils.RemoveDockerPathPrefix(path), "(tailwind)"))
+		} else {
+			fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.Blue(done), utils.RemoveDockerPathPrefix(path)))
+		}
 	}
 
 	return nil

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/tdewolff/minify/v2"
@@ -13,6 +14,8 @@ import (
 )
 
 func htmlProcessor(path string, productionMode bool) error {
+
+	start := time.Now()
 
 	minifier := minify.New()
 	minifier.Add("text/html", &html.Minifier{
@@ -72,7 +75,8 @@ func htmlProcessor(path string, productionMode bool) error {
 	}
 
 	if productionMode {
-		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.RemoveDockerPathPrefix(path)))
+		done := fmt.Sprintf("[%.2f]", time.Since(start).Seconds())
+		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.Blue(done), utils.RemoveDockerPathPrefix(path)))
 	}
 
 	return nil
