@@ -2,15 +2,15 @@ package version
 
 import (
 	"fmt"
-	"os/exec"
 
-	"github.com/bep/godartsass/v2"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/spf13/cobra"
 )
 
 var version string
+var tailwindVersion string
 
 var VersionCmd = &cobra.Command{
 	Use:   "version",
@@ -18,29 +18,20 @@ var VersionCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		versionString := lipgloss.NewStyle().Bold(true).Padding(1, 0, 0, 0).Render("Eventsforce", utils.BoldGreen(version))
-		fmt.Println(versionString)
+		// versionString := lipgloss.NewStyle().Bold(true).Padding(1, 0, 0, 0).Render("Eventsforce", utils.BoldGreen(version))
+		// tailwindVersionString := lipgloss.NewStyle().Bold(true).Padding(1, 0, 0, 0).Render("Tailwind", utils.BoldGreen(tailwindVersion))
 
-		if utils.RunningInDocker() {
-			sassVersion, err := godartsass.Version("/dart-sass/sass")
-			if err != nil {
-				panic(err)
-			}
-			sassVersionString := lipgloss.NewStyle().Bold(true).Padding(0).Render("Dart SASS  ", utils.BoldGreen(sassVersion.CompilerVersion))
-			fmt.Println(sassVersionString)
+		t := table.New().
+			Border(lipgloss.HiddenBorder()).
+			Rows([]string{"Eventsforce", utils.BoldGreen(version)}, []string{"Tailwind", utils.BoldGreen(tailwindVersion)}).
+			StyleFunc(func(row, col int) lipgloss.Style {
+				if col == 0 {
+					return lipgloss.NewStyle().PaddingRight(1)
+				}
+				return lipgloss.NewStyle().Padding(0, 1)
+			})
 
-		} else {
-			sassCmd := exec.Command("sass", "--version")
-
-			sassVersion, err := sassCmd.Output()
-			if err != nil {
-				panic(err)
-			}
-
-			sassVersionString := lipgloss.NewStyle().Bold(true).Padding(0).Render("Dart SASS  ", utils.BoldGreen(string(sassVersion)))
-			fmt.Println(sassVersionString)
-
-		}
+		fmt.Println(t.String())
 
 	},
 }

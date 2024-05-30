@@ -72,9 +72,10 @@ var NewTemplateCmd = &cobra.Command{
 			if err := createNewTemplate(newTemplatePath, useTailwind); err != nil {
 				fmt.Println(utils.SectionErrorMessage(err.Error()))
 				defer os.Exit(1)
+			} else {
+				fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(newTemplatePath))
 			}
 
-			fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(newTemplatePath))
 		}
 	}}
 
@@ -138,7 +139,7 @@ func createNewTemplate(newTemplatePath string, useTailwind bool) error {
 		}
 
 	} else {
-		fmt.Println("Hmmmm looks like that template already exists")
+		return fmt.Errorf("Hmmmm looks like that template already exists")
 	}
 
 	return nil

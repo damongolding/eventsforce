@@ -3,7 +3,7 @@ FROM --platform=$BUILDPLATFORM golang:1.22.3-alpine AS build
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
-ARG SASS_VERSION
+ARG TAILWIND_VERSION
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ RUN chmod +x tailwindcss-$TARGETOS-$TARGETARCH
 RUN mv tailwindcss-$TARGETOS-$TARGETARCH tailwindcss
 
 RUN go mod download
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version=${VERSION}" -o eventsforce .
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version=${VERSION} -X github.com/damongolding/eventsforce/cmd/version.tailwindVersion=${TAILWIND_VERSION}" -o eventsforce .
 
 
 
@@ -27,7 +27,6 @@ FROM  zenika/alpine-chrome:latest
 WORKDIR /
 
 COPY --from=build /app/eventsforce .
-# COPY --from=build /app/dart-sass ./dart-sass
 COPY --from=build /app/tailwindcss ./tailwindcss
 
 EXPOSE 3000

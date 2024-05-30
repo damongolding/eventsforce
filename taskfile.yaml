@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  VERSION: 0.3.1
+  VERSION: 0.4.0
 
 dotenv: [".env"]
 
@@ -37,30 +37,30 @@ tasks:
 
   docker-image:
     cmds:
-      - docker build --build-arg VERSION={{.VERSION}} --build-arg SASS_VERSION={{.SASS_VERSION}} -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+      - docker build --build-arg VERSION={{.VERSION}} --build-arg TAILWIND_VERSION={{.TAILWIND_VERSION}} -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
     vars:
-      SASS_VERSION:
-        sh: 'curl -L -H "Accept: application/vnd.github+json" https://api.github.com/repos/sass/dart-sass/releases/latest | jq -r ".tag_name"'
+      TAILWIND_VERSION:
+        sh: 'curl -L -H "Accept: application/vnd.github+json" https://api.github.com/repos/tailwindlabs/tailwindcss/releases/latest | jq -r ".tag_name" | sed "s/^v//"'
 
   docker-image-push:
     cmds:
-      - docker build --build-arg VERSION={{.VERSION}} --build-arg SASS_VERSION={{.SASS_VERSION}} --platform linux/amd64,linux/arm64 --push -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
+      - docker build --build-arg VERSION={{.VERSION}} --build-arg TAILWIND_VERSION={{.TAILWIND_VERSION}} --platform linux/amd64,linux/arm64 --push -t damongolding/eventsforce:{{.VERSION}}  -t damongolding/eventsforce:latest .
     vars:
-      SASS_VERSION:
-        sh: 'curl -L -H "Accept: application/vnd.github+json" https://api.github.com/repos/sass/dart-sass/releases/latest | jq -r ".tag_name"'
+      TAILWIND_VERSION:
+        sh: 'curl -L -H "Accept: application/vnd.github+json" https://api.github.com/repos/tailwindlabs/tailwindcss/releases/latest | jq -r ".tag_name" | sed "s/^v//"'
 
   docker-build:
     cmds:
-      - docker run -it --rm -e "TERM=xterm-256color"  -v "${PWD}/:/templates" --user 1000:1000 damongolding/eventsforce build
+      - docker run -it --rm -e TERM=xterm-256color -e DEBUG_COLORS=true -e COLORTERM=truecolor -v "${PWD}/:/templates" --user 1000:1000 damongolding/eventsforce build
 
   docker-dev:
     cmds:
-      - docker run --rm -it -e "TERM=xterm-256color" -v "${PWD}/:/templates" -p 3000:3000 -p 35729:35729 --user 1000:1000 damongolding/eventsforce serve
+      - docker run -it --rm -e TERM=xterm-256color -e DEBUG_COLORS=true -e COLORTERM=truecolor -v "${PWD}/:/templates" -p 3000:3000 -p 35729:35729 --user 1000:1000 damongolding/eventsforce serve
 
   docker-version:
     cmds:
-      - docker run -it --rm -e "TERM=xterm-256color" -v "${PWD}/:/templates" damongolding/eventsforce version
+      - docker run -it --rm -e TERM=xterm-256color -e DEBUG_COLORS=true -e COLORTERM=truecolor -v "${PWD}/:/templates" damongolding/eventsforce version
 
   docker-new:
     cmds:
-      - docker run -it --rm -e "TERM=xterm-256color" -v "${PWD}/:/templates" damongolding/eventsforce new
+      - docker run -it --rm -e TERM=xterm-256color -e DEBUG_COLORS=true -e COLORTERM=truecolor -v "${PWD}/:/templates" damongolding/eventsforce new
