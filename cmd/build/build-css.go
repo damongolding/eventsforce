@@ -88,7 +88,7 @@ func cssProcessor(path string, productionMode bool) error {
 
 	if productionMode {
 
-		done := fmt.Sprintf("[%.2f]", time.Since(start).Seconds())
+		done := fmt.Sprintf("[%.2fs]", time.Since(start).Seconds())
 
 		if usingTailwaind {
 			fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.Blue(done), utils.RemoveDockerPathPrefix(path), "(tailwind)"))

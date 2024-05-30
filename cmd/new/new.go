@@ -73,7 +73,7 @@ var NewTemplateCmd = &cobra.Command{
 				fmt.Println(utils.SectionErrorMessage(err.Error()))
 				defer os.Exit(1)
 			} else {
-				fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(newTemplatePath))
+				fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(utils.RemoveDockerPathPrefix(newTemplatePath)))
 			}
 
 		}

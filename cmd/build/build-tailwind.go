@@ -20,6 +20,10 @@ type TailwindError struct {
 	Line   string
 }
 
+type TailwindErrorOut struct {
+	Reason string `json:"reason"`
+}
+
 func (t *TailwindError) parseErrors(buff *bytes.Buffer) {
 	scanner := bufio.NewScanner(buff)
 	for scanner.Scan() {
@@ -32,9 +36,11 @@ func (t *TailwindError) parseErrors(buff *bytes.Buffer) {
 			t.File = theFile[1]
 		case strings.Contains(scanner.Text(), "line: "):
 			theLine := strings.Split(scanner.Text(), ":")
-			t.File = strings.TrimSpace(theLine[1])
+			t.Line = strings.TrimSpace(theLine[len(theLine)-1])
+			t.Line = strings.Replace(t.Line, ",", "", -1)
 		}
 	}
+
 }
 
 func (t *TailwindError) getError() error {

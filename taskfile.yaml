@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  VERSION: 0.4.0
+  VERSION: 0.4.1
 
 dotenv: [".env"]
 
@@ -15,11 +15,15 @@ tasks:
     cmds:
       - go build -ldflags "-X github.com/damongolding/eventsforce/cmd/version.version={{.VERSION}}" -o dist/eventsforce .
 
+  commit-tag:
+    - git add .
+    - git commit -m "{{.MESSAGE}}"
+    - git push
+    - git tag -fa v$VERSION -m "{{.MESSAGE}}"
+    - git push origin v$VERSION
+
   tag:
     cmds:
-      - git add .
-      - git commit -m "{{.MESSAGE}}"
-      - git push
       - git tag -fa v$VERSION -m "{{.MESSAGE}}"
       - git push origin v$VERSION
 
