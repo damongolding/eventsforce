@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
 
@@ -27,6 +28,10 @@ func init() {
 	config = *configuration.NewConfig()
 }
 
+type CssTemplate struct {
+	Tailwind bool
+}
+
 // rootCmd represents the base command when called without any subcommands
 var NewTemplateCmd = &cobra.Command{
 	Use:   "new",
@@ -36,7 +41,7 @@ var NewTemplateCmd = &cobra.Command{
 
 		var newTemplateName string
 		var createNewTemplateConfim bool
-		var useSass bool
+		var useTailwind bool
 
 		form := huh.NewForm(
 			huh.NewGroup(
@@ -45,9 +50,9 @@ var NewTemplateCmd = &cobra.Command{
 					Description("The name of the new template").
 					Value(&newTemplateName),
 
-				// huh.NewConfirm().
-				// 	Title("Use SASS?").
-				// 	Value(&useSass),
+				huh.NewConfirm().
+					Title("Use Tailwind?").
+					Value(&useTailwind),
 
 				huh.NewConfirm().
 					Title("Ready?").
@@ -64,16 +69,17 @@ var NewTemplateCmd = &cobra.Command{
 		if createNewTemplateConfim {
 			newTemplatePath := filepath.Join(config.SrcDir, newTemplateName)
 
-			if err := createNewTemplate(newTemplatePath, useSass); err != nil {
+			if err := createNewTemplate(newTemplatePath, useTailwind); err != nil {
 				fmt.Println(utils.SectionErrorMessage(err.Error()))
 				defer os.Exit(1)
+			} else {
+				fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(newTemplatePath))
 			}
 
-			fmt.Println(utils.BlueBold(newTemplateName), "has been created in", utils.BlueBold(newTemplatePath))
 		}
 	}}
 
-func createFile(path, fileName string) error {
+func createHTML(path, fileName string) error {
 	// Create HTML file
 	f, err := os.Create(filepath.Join(path, fileName))
 	if err != nil {
@@ -91,7 +97,31 @@ func createFile(path, fileName string) error {
 	return nil
 }
 
-func createNewTemplate(newTemplatePath string, useSass bool) error {
+func createCSS(path, filename string, useTailwind bool) error {
+	f, err := os.Create(filepath.Join(path, filename))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fileContents, err := newTemplateAssets.ReadFile("new-template-assets/style.css")
+	if err != nil {
+		return err
+	}
+
+	tmpl, err := template.New("style").Parse(string(fileContents))
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(f, CssTemplate{Tailwind: useTailwind})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createNewTemplate(newTemplatePath string, useTailwind bool) error {
 
 	if _, err := os.Stat(newTemplatePath); errors.Is(err, os.ErrNotExist) {
 		if err := os.Mkdir(newTemplatePath, 0755); err != nil {
@@ -99,24 +129,17 @@ func createNewTemplate(newTemplatePath string, useSass bool) error {
 		}
 
 		// Create HTML file
-		if err := createFile(newTemplatePath, "index.html"); err != nil {
+		if err := createHTML(newTemplatePath, "index.html"); err != nil {
 			return err
 		}
 
-		if useSass {
-			// Create CSS file
-			if err := createFile(newTemplatePath, "style.scss"); err != nil {
-				return err
-			}
-		} else {
-			// Create CSS file
-			if err := createFile(newTemplatePath, "style.css"); err != nil {
-				return err
-			}
+		// Create CSS
+		if err := createCSS(newTemplatePath, "style.css", useTailwind); err != nil {
+			return err
 		}
 
 	} else {
-		fmt.Println("Hmmmm looks like that template already exists")
+		return fmt.Errorf("Hmmmm looks like that template already exists")
 	}
 
 	return nil

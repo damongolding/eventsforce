@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/damongolding/eventsforce/internal/utils"
 	"github.com/tdewolff/minify/v2"
@@ -13,6 +14,8 @@ import (
 )
 
 func htmlProcessor(path string, productionMode bool) error {
+
+	start := time.Now()
 
 	minifier := minify.New()
 	minifier.Add("text/html", &html.Minifier{
@@ -50,6 +53,8 @@ func htmlProcessor(path string, productionMode bool) error {
 			htmlContent = strings.ReplaceAll(htmlContent, match[0], string(htmlFileContent))
 
 		}
+		// Add live reload tag
+		htmlContent = strings.Replace(htmlContent, "</body>", "<script src=\"http://localhost:35729/livereload.js\"></script></body>", -1)
 	}
 
 	if productionMode {
@@ -69,5 +74,11 @@ func htmlProcessor(path string, productionMode bool) error {
 		return err
 	}
 
+	if productionMode {
+		done := fmt.Sprintf("[%.2f]", time.Since(start).Seconds())
+		fmt.Println(utils.SectionMessage(utils.Green("Proccessed"), utils.Blue(done), utils.RemoveDockerPathPrefix(path)))
+	}
+
 	return nil
+
 }

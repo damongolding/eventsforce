@@ -1,3 +1,14 @@
+{{ if .Tailwind }}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    @include "css/fonts.css";
+}
+
+{{ else }}
 @include "css/reset.css";
 @include "css/fonts.css";
 @include "css/base.css";
+{{ end }}

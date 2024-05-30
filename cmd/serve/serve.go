@@ -95,7 +95,7 @@ func watcher() {
 					wg.Add(1)
 
 					if err := build.Build(false, &wg); err != nil {
-						panic(err)
+						fmt.Println(err)
 					}
 					wg.Wait()
 
@@ -142,6 +142,13 @@ func watcher() {
 }
 
 func Serve() error {
+
+	defer func() error {
+		if err := recover(); err != nil {
+			return fmt.Errorf("%s", err)
+		}
+		return nil
+	}()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
